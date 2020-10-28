@@ -40,7 +40,7 @@
 
 点击 **Actions**，再点击左侧的**Genshin Impact Helper**，再点击**Run workflow**
     
-    ![run](https://i.loli.net/2020/10/28/5ylvgdYf9BDMqAH.png)
+![run](https://i.loli.net/2020/10/28/5ylvgdYf9BDMqAH.png)
 
 至此，部署完毕。
 
