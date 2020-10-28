@@ -1,0 +1,26 @@
+name: "Genshin Impact Helper"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 22 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - run: |
+          pip install -r requirements.txt
+          string="${{ secrets.COOKIE }}"
+          IFS="#"
+          array=($string)
+          for var in ${array[@]}
+          do
+            python3 genshin.py <<EOF
+            $var
+          EOF
+          done
