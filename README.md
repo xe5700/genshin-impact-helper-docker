@@ -1,4 +1,4 @@
-# genshin-impact-helper
+# Genshin Impact Helper
 
 # 前言
 
