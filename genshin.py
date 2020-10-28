@@ -8,8 +8,8 @@ if (cookie == ""):
   cookie = input().strip()
 
 def main():
-  url1 = f 'https://api-takumi.mihoyo.com/binding/api/getUserGameRolesByCookie?game_biz=hk4e_cn'
-  url2 = f 'https://api-takumi.mihoyo.com/event/bbs_sign_reward/sign'
+  url1 = f'https://api-takumi.mihoyo.com/binding/api/getUserGameRolesByCookie?game_biz=hk4e_cn'
+  url2 = f'https://api-takumi.mihoyo.com/event/bbs_sign_reward/sign'
   headers1 = {
     'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) miHoYoBBS/2.1.0',
     'Referer': 'https://webstatic.mihoyo.com/bbs/event/signin-ys/index.html?bbs_auth_required=true&act_id=e202009291139501&utm_source=bbs&utm_medium=mys&utm_campaign=icon',
