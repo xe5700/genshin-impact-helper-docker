@@ -1,5 +1,6 @@
 import requests
 import json
+import uuid
 from time import sleep
 from random import randint
 
@@ -12,6 +13,7 @@ if (cookie == ""):
 def main():
   url1 = f'https://api-takumi.mihoyo.com/binding/api/getUserGameRolesByCookie?game_biz=hk4e_cn'
   url2 = f'https://api-takumi.mihoyo.com/event/bbs_sign_reward/sign'
+  device_id = str(uuid.uuid3(uuid.NAMESPACE_URL,cookie)).replace('-','').upper()
   headers1 = {
     'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) miHoYoBBS/2.1.0',
     'Referer': 'https://webstatic.mihoyo.com/bbs/event/signin-ys/index.html?bbs_auth_required=true&act_id=e202009291139501&utm_source=bbs&utm_medium=mys&utm_campaign=icon',
@@ -23,7 +25,7 @@ def main():
     'Referer': 'https://webstatic.mihoyo.com/bbs/event/signin-ys/index.html?bbs_auth_required=true&act_id=e202009291139501&utm_source=bbs&utm_medium=mys&utm_campaign=icon',
     'Accept-Encoding': 'gzip, deflate, br',
     'cookie': cookie,
-    'x-rpc-device_id': '6D8BE6E7B45343049345E835C8AAC233'
+    'x-rpc-device_id': device_id
 }
   r1 = s.get(url1, headers = headers1)
   d1 = json.loads(r1.text)
