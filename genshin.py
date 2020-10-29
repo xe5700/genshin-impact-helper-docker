@@ -1,5 +1,7 @@
 import requests
 import json
+from time import sleep
+from random import randint
 
 s = requests.Session()
 
@@ -44,4 +46,5 @@ def main():
 
 
 if __name__ == "__main__":
+  sleep(randint(10,300))
   main()
