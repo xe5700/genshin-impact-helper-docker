@@ -34,13 +34,12 @@ def main():
   r2 = s.post(url2, headers = headers2, data = json.dumps(data))
   d2 = json.loads(r2.text)
   if d2['retcode'] == 0:
-    print("签到成功!")
+    print("======\n签到成功!\n======")
   else :
     if d2['retcode'] == -5003:
-      print(d2['message'])
-      exit(100)
+      print("======\n" + d2['message'] + "\n======")
     else :
-      print("签到失败!\n详细信息:" + d2['message'])
+      print("======\n签到失败!\n详细信息:" + d2['message'] + "\n======")
       exit(100)
 
 
