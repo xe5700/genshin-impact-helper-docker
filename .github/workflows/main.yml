@@ -8,19 +8,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions/setup-python@v2
         with:
-          python-version: 3.7
-      - run: |
+          python-version: 3.8
+
+      - name: run sign
+        run: |
           pip install -r requirements.txt
-          string="${{ secrets.COOKIE }}"
-          IFS="#"
-          array=($string)
-          for var in ${array[@]}
-          do
-            python3 genshin.py <<EOF
-            $var
-          EOF
-          done
+          echo "${{ secrets.COOKIE }}" | tr '#' "\n" | xargs -I {} sh -c 'echo "{}" | python3 ./genshin.py'
+
