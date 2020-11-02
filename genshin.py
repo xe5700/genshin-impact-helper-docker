@@ -21,22 +21,22 @@ class ConfMeta(type):
 
   @property
   def ua(self):
-    return 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0_1 like Mac OS X) '  \
-            'AppleWebKit/605.1.15 (KHTML, like Gecko) miHoYoBBS/2.1.0'
+    return 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0_1 like Mac OS X) ' \
+           'AppleWebKit/605.1.15 (KHTML, like Gecko) miHoYoBBS/2.1.0'
 
 
 class Conf(metaclass=ConfMeta):
   pass
 
 
-class UID(object):
+class Roles(object):
   def __init__(self, cookie:str=None):
     if type(cookie) is not str:
       raise TypeError("%s want a %s but got %s" %(
           self.__class__, type(__name__), type(cookie)))
 
     self._cookie = cookie
-    self._url = "https://api-takumi.mihoyo.com/binding/api/"   \
+    self._url = "https://api-takumi.mihoyo.com/binding/api/" \
                 "getUserGameRolesByCookie?game_biz=%s" %('hk4e_cn')
 
   def get_header(self):
@@ -52,7 +52,7 @@ class UID(object):
         'Cookie': self._cookie
     }
 
-  def get_uid(self):
+  def get_roles(self):
     try:
       jdict = json.loads(
               requests.Session().get(
@@ -61,10 +61,7 @@ class UID(object):
       logging.error(e)
       raise HTTPError
 
-    try:
-      return jdict['data']['list'][0]['game_uid']
-    except:
-      raise KeyError(str(jdict))
+    return jdict
 
 
 class Sign(object):
@@ -75,19 +72,19 @@ class Sign(object):
 
     self._url = 'https://api-takumi.mihoyo.com/event/bbs_sign_reward/sign'
 
-    uid = UID(cookie)
+    roles = Roles(cookie)
     errstr = None
 
     for i in range(1, 4):
       try:
-        self._uid = uid.get_uid()
+        self._roles = roles.get_roles()
       except HTTPError as e:
-        logging.error("HTTP error when get UID, retry %s times ..." %(i))
+        logging.error("HTTP error when get user game roles, retry %s times ..." %(i))
         logging.error("error is %s" %(e))
         errstr = str(e)
         continue
       except KeyError as e:
-        logging.error("Wrong response to get UID, retry %s times ..." %(i))
+        logging.error("Wrong response to get user game roles, retry %s times ..." %(i))
         logging.error("response is %s" %(e))
         errstr = str(e)
         continue
@@ -99,9 +96,21 @@ class Sign(object):
         break
 
     try:
-      self._uid
+      self._roles
     except AttributeError:
       raise Exception(errstr)
+
+    # cn_gf01:    Official server
+    # cn_qd01:    Bilibili server
+    try:
+      self._region = self._roles['data']['list'][0]['region']
+    except:
+      raise KeyError(str(self._roles))
+
+    try:
+      self._uid = self._roles['data']['list'][0]['game_uid']
+    except:
+      raise KeyError(str(self._roles))
 
     self._cookie = cookie
 
@@ -125,7 +134,7 @@ class Sign(object):
 
     data = {
         'act_id': 'e202009291139501',
-        'region': 'cn_gf01',
+        'region': self._region,
         'uid': self._uid
     }
 
@@ -151,7 +160,7 @@ def makeResult(result:str, data=None):
 
 if __name__ == "__main__":
   seconds = randint(10, 300)
-  logging.info('sleep for %s seconds ...' %(seconds))
+  logging.info('Sleep for %s seconds ...' %(seconds))
 
   sleep(seconds)
 
@@ -173,6 +182,7 @@ if __name__ == "__main__":
   # -5003:    already signed in
   if code in [0, -5003]:
     result = makeResult('Success', jstr)
-
-  logging.info(result)
-
+    logging.info(result)
+  else:
+    logging.info(result)
+    exit(-100)
