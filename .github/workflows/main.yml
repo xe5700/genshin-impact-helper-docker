@@ -12,12 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/setup-python@v2
+      - name: Set up python
+        uses: actions/setup-python@v2
         with:
           python-version: 3.8
 
-      - name: run sign
+      - name: Run sign
         run: |
           pip install -r requirements.txt
           echo "${{ secrets.COOKIE }}" | tr '#' "\n" | xargs -I {} sh -c 'echo "{}" | python3 ./genshin.py'
-
