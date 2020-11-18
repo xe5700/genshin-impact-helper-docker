@@ -35,14 +35,14 @@ Genshin Impact Helper
 
 浏览器打开 https://bbs.mihoyo.com/ys/ 并登录账号
 
-#### 方法一
+#### 2.1 方法一
 
 * 按`F12`，打开`开发者工具`，找到`Network`并点击
 * 按`F5`刷新页面，按下图复制`Cookie`
 
 > ![cookie](https://i.loli.net/2020/10/28/TMKC6lsnk4w5A8i.png)
 
-#### 方法二
+#### 2.2 方法二
 
 * 复制以下代码
 ```
@@ -105,5 +105,5 @@ JSON.stringify({
 1. 程序会在每天早上自动执行签到流程，也可以随时通过上述`步骤4`手动触发
 2. 登录失效时，尝试重新更换`Cookie` 
 3. 支持多账号，不同`Cookie`之间用`#`分开即可
-4. 支持官服和B服
+4. 支持官服和 B 服
 
