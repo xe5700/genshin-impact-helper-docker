@@ -1,16 +1,19 @@
 name: "Genshin Impact Helper"
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: "0 22 * * *"
+    - cron: "0 22 * * *"  # scheduled at 06:00 (UTC+8) everyday
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout master
+        uses: actions/checkout@v2
+        with:
+         ref: master
 
       - name: Set up python
         uses: actions/setup-python@v2
