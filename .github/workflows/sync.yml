@@ -2,7 +2,7 @@ name: "Auto Sync Fork"
 
 on:
   schedule:
-    - cron: "0 */3 * * *"  # every 3 hours
+    - cron: "0 16 * * *"  # scheduled at 00:00 (UTC+8) everyday
   workflow_dispatch:
 
 jobs:
