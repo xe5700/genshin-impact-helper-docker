@@ -138,17 +138,6 @@ Error: Process completed with exit code 255.
 
 </details>
 
-## 🔄更新
-
-因为接口请求上可能发生一些变化，所以上游源代码需要作出更改来适配这些变化，如果你没有及时更新项目源代码，可能会导致签到失败。
-
-为解决此问题，项目开启了自动同步上游源代码的工作流程。该功能生效于 2020 年 12 月 04 日之后复刻的项目。
-
-若在此时间之前复刻，可按照以下步骤更新：
-
-- 下载[sync.yml](https://raw.githubusercontent.com/y1ndan/genshin-impact-helper/master/.github/workflows/sync.yml)文件
-- 自行上传`sync.yml`文件至**你的 Fork 仓库**的`.github/workflows`目录下
-- 到`Actions`页面手动触发一次名为`Auto Sync Fork`的工作流程
 
 ## ❗️协议
 
