@@ -3,7 +3,6 @@ name: "Genshin Impact Helper"
 on:
   schedule:
     - cron: "0 22 * * *"  # scheduled at 06:00 (UTC+8) everyday
-  workflow_dispatch:
 
 jobs:
   build:
@@ -14,7 +13,8 @@ jobs:
       - name: Checkout master
         uses: actions/checkout@v2
         with:
-         ref: master
+          repository: y1ndan/genshin-impact-helper
+          ref: master
 
       - name: Set up python
         uses: actions/setup-python@v2
