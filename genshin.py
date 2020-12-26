@@ -76,6 +76,7 @@ class Sign(object):
       raise TypeError("%s want a %s but got %s" %(
         self.__class__, type(__name__), type(cookie)))
 
+    self._cookie = cookie
     self._url = 'https://api-takumi.mihoyo.com/event/bbs_sign_reward/sign'
 
     roles = Roles(cookie)
@@ -85,12 +86,12 @@ class Sign(object):
       try:
         self._roles = roles.get_roles()
       except HTTPError as e:
-        logging.error("HTTP error when get user game roles, retry %s times ..." %(i))
+        logging.error("HTTP error when get user game roles, retry %s time(s) ..." %(i))
         logging.error("error is %s" %(e))
         errstr = str(e)
         continue
       except KeyError as e:
-        logging.error("Wrong response to get user game roles, retry %s times ..." %(i))
+        logging.error("Wrong response to get user game roles, retry %s time(s) ..." %(i))
         logging.error("response is %s" %(e))
         errstr = str(e)
         continue
@@ -102,23 +103,9 @@ class Sign(object):
         break
 
     try:
-      self._roles
+      self._bindList = self._roles['data']['list']
     except AttributeError:
       raise Exception(errstr)
-
-    # cn_gf01:    Official server
-    # cn_qd01:    Bilibili server
-    try:
-      self._region = self._roles['data']['list'][0]['region']
-    except:
-      raise KeyError(str(self._roles))
-
-    try:
-      self._uid = self._roles['data']['list'][0]['game_uid']
-    except:
-      raise KeyError(str(self._roles))
-
-    self._cookie = cookie
 
   # Provided by Steesha
   def md5(self, text):
@@ -139,6 +126,11 @@ class Sign(object):
           "&utm_medium=%s&utm_campaign=%s" %(
             Conf.index_url, 'true', actid, 'bbs', 'mys', 'icon')
 
+    # x-rpc-client_type
+    # 1:    ios
+    # 2:    android
+    # 4:    pc web
+    # 5:    mobile web
     return {
       'x-rpc-device_id': str(uuid.uuid3(
         uuid.NAMESPACE_URL, self._cookie)).replace('-','').upper(),
@@ -152,22 +144,41 @@ class Sign(object):
     }
 
   def run(self):
-    logging.info('UID is %s' %(str(self._uid).replace(str(self._uid)[3:6],'***',1)))
-
-    data = {
-      'act_id': 'e202009291139501',
-      'region': self._region,
-      'uid': self._uid
-    }
-
-    try:
-      jdict = json.loads(requests.Session().post(
-        self._url, headers = self.get_header(),
-        data = json.dumps(data, ensure_ascii=False)).text)
-    except Exception as e:
-      raise
-
-    return jdict
+    for i in range(len(self._bindList)):
+      # region
+      # cn_gf01:    天空岛
+      # cn_qd01:    世界树
+      try:
+        self._region = self._bindList[i]['region']
+      except:
+        raise KeyError(str(self._roles))
+  
+      try:
+        self._region_name = self._bindList[i]['region_name']
+      except:
+        raise KeyError(str(self._roles))
+  
+      try:
+        self._uid = self._bindList[i]['game_uid']
+      except:
+        raise KeyError(str(self._roles))
+  
+      logging.info('Your account has been bound %s role(s), UID %s is %s in %s' %(len(self._bindList), i+1, str(self._uid).replace(str(self._uid)[3:6],'***',1), self._region_name))
+  
+      data = {
+        'act_id': 'e202009291139501',
+        'region': self._region,
+        'uid': self._uid
+      }
+  
+      try:
+        jdict = json.loads(requests.Session().post(
+          self._url, headers = self.get_header(),
+          data = json.dumps(data, ensure_ascii=False)).text)
+      except Exception as e:
+        raise
+  
+      return jdict
 
 
 def makeResult(result:str, data=None):
@@ -209,4 +220,3 @@ if __name__ == "__main__":
 
   logging.info(result)
   exit(ret)
-
