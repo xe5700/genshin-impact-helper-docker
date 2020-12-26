@@ -182,9 +182,34 @@ def makeResult(result:str, data=None):
     sort_keys=False, indent=2, ensure_ascii=False
   )
 
+def notify(key, massage):
+  if key != '':
+    logging.info('正在推送通知...')
+    url = 'https://sc.ftqq.com/%s.send' %(key)
+    data = {'text':'原神签到小助手', 'desp':massage}
+    try:
+      jdict = json.loads(
+              requests.Session().post(url, data = data).text)
+      errmsg = jdict['errmsg']
+      if errmsg == 'success':
+        logging.info('推送通知成功')
+      else:
+        logging.info('推送通知失败')
+        logging.error(jdict)
+    except Exception as e:
+      logging.error(e)
+      raise HTTPError
+    
+    return jdict
+  else:
+    logging.info('未配置SCKEY,正在跳过推送...')
+
 
 if __name__ == "__main__":
-  cookie = input().strip()
+  secret = input().strip().rsplit(' ', 1)
+  secret.append('')
+  cookie=secret[0]
+  sckey=secret[1]
   jstr = Roles(cookie).get_rolesInfo()
   result = makeResult('Failed', jstr)
   ret = -1
@@ -194,7 +219,7 @@ if __name__ == "__main__":
     logging.info('Your account has been bound %s role(s)' %(len(rolesList)))
 
     for i in range(len(rolesList)):
-      seconds = random.randint(1, 3)
+      seconds = random.randint(10, 300)
       logging.info('Sleep for %s seconds ...' %(seconds))
       time.sleep(seconds)
 
@@ -218,8 +243,9 @@ if __name__ == "__main__":
 
       logging.info(result)
 
-    logging.info('Sign in complete!')
   except Exception as e:
     logging.info(result)
 
+  notify(sckey, result)
+  logging.info('签到完成!')
   exit(ret)
