@@ -206,7 +206,7 @@ def notify(key, massage):
 
 
 if __name__ == "__main__":
-  secret = input().strip().rsplit(' ', 1)
+  secret = input().strip().split('#')
   secret.append('')
   cookie=secret[0]
   sckey=secret[1]

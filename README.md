@@ -32,9 +32,9 @@ Genshin Impact Helper 可以自动化为你获取原神每日福利。
 ## 💡特性
 
 - [x] **自动签到**  程序会在每天早上自动执行签到流程，也可以随时通过部署教程的`步骤4`手动触发，具体时间参照[此处](.github/workflows/main.yml)
-- [x] **自动同步**  自动从上游源仓库拉取代码至复刻仓库
-- [x] **支持多服务器**  支持绑定单个官服或 Bilibili 服的米游社账号，目前不支持同时绑定多个服务器的账号
-- [x] **支持多账号**  不同`Cookie`值之间用`#`分开即可，如：`<Cookie1>#<Cookie2>`
+- [x] **支持订阅**  通过配置`SCKEY`开启订阅，每天将签到结果推送到微信上
+- [x] **支持多账号**  不同账号的`Cookie`之间用`#`分隔，如：`yourCookie1#yourCookie2`
+- [x] **支持多角色**  支持绑定官服和B站渠道服角色的米游社账号
 
 ## 📐部署
 
@@ -85,6 +85,10 @@ if (ask == true) {
 > ![new-secret.png](https://i.loli.net/2020/10/28/sxTuBFtRvzSgUaA.png)
 
 - 建立名为`COOKIE`的 secret，值为`步骤2`中复制的`Cookie`内容，最后点击`Add secret`
+
+- secret名字必须为`COOKIE`！
+- secret名字必须为`COOKIE`！
+- secret名字必须为`COOKIE`！
 
 > ![add-secret](https://i.loli.net/2020/10/28/sETkVdmrNcCUpgq.png)
 
@@ -138,6 +142,14 @@ Error: Process completed with exit code 255.
 
 </details>
 
+## 🔔订阅
+
+若开启订阅推送，无论成功与否，都会收到微信通知。
+
+- 使用 GitHub 登录 [sc.ftqq.com](http://sc.ftqq.com/?c=github&a=login) 创建账号
+- 点击「[发送消息](http://sc.ftqq.com/?c=code)」，获取`SCKEY`
+- 点击「[微信推送](http://sc.ftqq.com/?c=wechat&a=bind)」，完成微信绑定
+- 建立名为`SCKEY`的 secret，并添加获取的 SCKEY 值，开启订阅推送
 
 ## ❗️协议
 
