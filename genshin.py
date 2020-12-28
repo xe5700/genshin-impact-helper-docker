@@ -24,9 +24,19 @@ class ConfMeta(type):
     'utm_campaign={}'.format('true', self.act_id, 'bbs', 'mys', 'icon')
 
   @property
+  def award_url(self):
+    return 'https://api-takumi.mihoyo.com/event/bbs_sign_reward/home?' \
+    'act_id={}'.format(self.act_id)
+
+  @property
   def role_url(self):
     return 'https://api-takumi.mihoyo.com/binding/api/' \
     'getUserGameRolesByCookie?game_biz={}'.format('hk4e_cn')
+
+  @property
+  def check_url(self):
+    return 'https://api-takumi.mihoyo.com/event/bbs_sign_reward/info?' \
+    'region={}&act_id={}&uid={}'
 
   @property
   def sign_url(self):
@@ -55,9 +65,9 @@ class Roles(object):
     if type(cookie) is not str:
       raise TypeError('%s want a %s but got %s' %(
         self.__class__, type(__name__), type(cookie)))
+    self._cookie = cookie
 
   def get_header(self):
-    self._cookie = cookie
     return {
       'User-Agent': Conf.ua,
       'Referer': Conf.ref_url,
@@ -66,23 +76,14 @@ class Roles(object):
     }
 
   def get_roles(self):
-    try:
-      jdict = json.loads(
-              requests.Session().get(
-                Conf.role_url, headers = self.get_header()).text)
-    except Exception as e:
-      logging.error(e)
-      raise HTTPError
-
-    return jdict
-
-  def get_rolesInfo(self):
     logging.info('Start getting user information ...')
     errstr = None
 
     for i in range(1, 4):
       try:
-        self._rolesInfo = self.get_roles()
+        jdict = json.loads(
+              requests.Session().get(
+                Conf.role_url, headers = self.get_header()).text)
       except HTTPError as e:
         logging.error('HTTP error when get user game roles, ' \
         'retry %s time(s) ...' %(i))
@@ -103,11 +104,11 @@ class Roles(object):
         break
 
     try:
-      self._rolesInfo
+      jdict
     except AttributeError:
       raise Exception(errstr)
 
-    return self._rolesInfo
+    return jdict
 
 
 class Sign(object):
@@ -115,6 +116,7 @@ class Sign(object):
     if type(cookie) is not str:
       raise TypeError('%s want a %s but got %s' %(
         self.__class__, type(__name__), type(cookie)))
+    self._cookie = cookie
 
   # Provided by Steesha
   def md5(self, text):
@@ -130,7 +132,6 @@ class Sign(object):
     return '{},{},{}'.format(i, r, c)
 
   def get_header(self):
-    self._cookie = cookie
     return {
       'x-rpc-device_id': str(uuid.uuid3(
         uuid.NAMESPACE_URL, self._cookie)).replace('-','').upper(),
@@ -181,19 +182,19 @@ def makeResult(result:str, data=None):
     sort_keys=False, indent=2, ensure_ascii=False
   )
 
-def notify(key, massage):
-  if key != '':
+def notify(sckey, massage):
+  if sckey != '':
     logging.info('正在推送通知...')
-    url = 'https://sc.ftqq.com/%s.send' %(key)
+    url = 'https://sc.ftqq.com/{}.send'.format(sckey)
     data = {'text':'原神签到小助手', 'desp':massage}
     try:
       jdict = json.loads(
               requests.Session().post(url, data = data).text)
       errmsg = jdict['errmsg']
       if errmsg == 'success':
-        logging.info('推送通知成功')
+        logging.info('推送成功')
       else:
-        logging.info('推送通知失败')
+        logging.error('推送失败')
         logging.error(jdict)
     except Exception as e:
       logging.error(e)
@@ -207,9 +208,9 @@ def notify(key, massage):
 if __name__ == '__main__':
   secret = input().strip().split('#')
   secret.append('')
-  cookie=secret[0]
-  sckey=secret[1]
-  jstr = Roles(cookie).get_rolesInfo()
+  cookie = secret[0]
+  sckey = secret[1]
+  jstr = Roles(cookie).get_roles()
   result = makeResult('Failed', jstr)
   ret = -1
 
