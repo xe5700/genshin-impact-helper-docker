@@ -18,6 +18,7 @@ jobs:
       - name: Checkout master
         uses: actions/checkout@v2
         with:
+          fetch-depth: 0
           ref: master
 
       - name: Merge From y1ndan/genshin-impact-helper
