@@ -20,6 +20,15 @@ jobs:
         with:
           ref: master
 
+      - name: Merge From y1ndan/genshin-impact-helper
+        if: ${{ env.ALLOW_MERGE != 'false' }}
+        run: |
+          git config --global user.name  github-actions
+          git config --global user.email github-actions@github.com
+          git remote add upstream https://github.com/y1ndan/genshin-impact-helper
+          git pull upstream master --allow-unrelated-histories
+          git push origin master
+
       - name: Set up python
         uses: actions/setup-python@v2
         with:
@@ -29,11 +38,4 @@ jobs:
         run: |
           pip install -r requirements.txt
           echo "${{ secrets.COOKIE }}" | tr '#' "\n" | sed 's/$/&#${{ secrets.SCKEY }}/g' | xargs -I {} sh -c 'echo "{}" | python3 ./genshin.py'
-      - name: Merge From y1ndan/genshin-impact-helper
-        if: ${{ env.ALLOW_MERGE != 'false' }}
-        run: |
-          git config --global user.name  github-actions
-          git config --global user.email github-actions@github.com
-          git remote add upstream https://github.com/y1ndan/genshin-impact-helper
-          git pull upstream master --allow-unrelated-histories
-          git push origin master
+
