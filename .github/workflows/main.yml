@@ -5,6 +5,10 @@ on:
     - cron: "0 22 * * *"  # scheduled at 06:00 (UTC+8) everyday
   workflow_dispatch:
 
+env:
+  # 是否允许从y1ndan/genshin-impact-helper同步代码
+  ALLOW_MERGE: 'false'
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,7 +18,6 @@ jobs:
       - name: Checkout master
         uses: actions/checkout@v2
         with:
-          repository: y1ndan/genshin-impact-helper
           ref: master
 
       - name: Set up python
@@ -26,3 +29,11 @@ jobs:
         run: |
           pip install -r requirements.txt
           echo "${{ secrets.COOKIE }}" | tr '#' "\n" | sed 's/$/&#${{ secrets.SCKEY }}/g' | xargs -I {} sh -c 'echo "{}" | python3 ./genshin.py'
+      - name: Merge From y1ndan/genshin-impact-helper
+        if: ${{ env.ALLOW_MERGE != 'false' }}
+        run: |
+          git config --global user.name  github-actions
+          git config --global user.email github-actions@github.com
+          git remote add upstream https://github.com/y1ndan/genshin-impact-helper
+          git pull upstream master --allow-unrelated-histories
+          git push origin master
