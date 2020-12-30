@@ -34,7 +34,7 @@ class ConfMeta(type):
     'getUserGameRolesByCookie?game_biz={}'.format('hk4e_cn')
 
   @property
-  def check_url(self):
+  def info_url(self):
     return 'https://api-takumi.mihoyo.com/event/bbs_sign_reward/info?' \
     'region={}&act_id={}&uid={}'
 
@@ -75,15 +75,24 @@ class Roles(object):
       'Cookie': self._cookie
     }
 
+  def get_awards(self):
+    try:
+      jdict = json.loads(
+              requests.Session().get(
+                Conf.award_url, headers = self.get_header()).text)
+    except Exception as e:
+      logging.error(e)
+
+    return jdict
+
   def get_roles(self):
-    logging.info('Start getting user information ...')
+    logging.info('准备获取账号信息...')
     errstr = None
 
     for i in range(1, 4):
       try:
-        jdict = json.loads(
-              requests.Session().get(
-                Conf.role_url, headers = self.get_header()).text)
+        jdict = json.loads(requests.Session().get(
+          Conf.role_url, headers = self.get_header()).text)
       except HTTPError as e:
         logging.error('HTTP error when get user game roles, ' \
         'retry %s time(s) ...' %(i))
@@ -148,61 +157,116 @@ class Sign(object):
       'Cookie': self._cookie
     }
 
-  def run(self):
-    # cn_gf01:  天空岛
-    # cn_qd01:  世界树
-    self._region = rolesList[i]['region']
-    self._region_name = rolesList[i]['region_name']
-    self._uid = rolesList[i]['game_uid']
-
-    data = {
-      'act_id': Conf.act_id,
-      'region': self._region,
-      'uid': self._uid
-    }
-
-    logging.info('Start signing in the NO.%s role which UID is %s in %s ...' %(
-      i+1, str(self._uid).replace(str(self._uid)[3:6],'***',1), self._region_name))
+  def get_info(self):
+    roles = Roles(self._cookie).get_roles()
     try:
-      jdict = json.loads(requests.Session().post(
-        Conf.sign_url, headers = self.get_header(),
-        data = json.dumps(data, ensure_ascii=False)).text)
+      rolesList = roles['data']['list']
     except Exception as e:
-      raise
+      massage = roles['massage']
+      notify(sckey, '失败', massage)
+      exit(-1)
+    else:
+      logging.info('当前账号绑定了 {} 个角色'.format(len(rolesList)))
+      infoList = []
+      # cn_gf01:  天空岛
+      # cn_qd01:  世界树
+      self._regionList = [(i.get('region', 'NA')) for i in rolesList]
+      self._regionNameList = [(i.get('region_name', 'NA')) for i in rolesList]
+      self._uidList = [(i.get('game_uid', 'NA')) for i in rolesList]
 
-    return jdict
+      logging.info('准备获取签到信息...')
+      for i in range(len(self._uidList)):
+        info_url = Conf.info_url.format(self._regionList[i], 
+        Conf.act_id, self._uidList[i])
+        try:
+          infoList.append(json.loads(requests.Session().get(
+            info_url, headers = self.get_header()).text))
+        except Exception as e:
+          logging.error(e)
+
+      return infoList
+
+  def run(self):
+    logging.info('任务开始')
+    massageList = []
+    infoList = self.get_info()
+    for i in range(len(infoList)):
+      if infoList[i]['data']['is_sign'] is True:
+      #if infoList[i]['data']['is_sign'] is False:
+        massage = '旅行者 {} 号,你已经签到过了'.format(i + 1)
+        notify(sckey, '成功', massage)
+      elif infoList[i]['data']['first_bind'] is True:
+        massage = '旅行者 {} 号,请先前往米游社绑定账号'.format(i + 1)
+        notify(sckey, '失败', massage)
+        exit(-1)
+      else:
+        today = infoList[i]['data']['today']
+        totalSignDay = infoList[i]['data']['total_sign_day']
+        award = Roles(self._cookie).get_awards()['data']['awards'][totalSignDay - 1]
+        uid = str(self._uidList[i]).replace(
+          str(self._uidList[i])[3:6], '***', 1)
+        data = {
+          'act_id': Conf.act_id,
+          'region': self._regionList[i],
+          'uid': self._uidList[i]
+        }
+
+        logging.info('准备为旅行者 {} 号签到...' \
+        '\nRegion: {}\nUID: {}'.format(i + 1, self._regionNameList[i], uid))
+        try:
+          jdict = json.loads(requests.Session().post(
+            Conf.sign_url, headers = self.get_header(),
+            data = json.dumps(data, ensure_ascii=False)).text)
+        except Exception as e:
+          raise
+        else:
+          code = jdict['retcode']
+          # 0:      success
+          # -5003:  already signed in
+          if code == 0:
+            status = '成功'
+            massageList.append(self.massage().format(today, 
+            self._regionNameList[i], uid, award['name'], award['cnt'], 
+            totalSignDay, jdict['massage']))
+          else:
+            status = '失败'
+            massageList = jdict
+
+        return notify(sckey, status, massageList)
+
+  def massage(self):
+    return '''
+    {:#^30}
+    🔅[{}]{}
+    今日奖励: {} × {}
+    本月累签: {} 天
+    签到结果: {}
+    {:#^30}
+    '''
 
 
-def makeResult(result:str, data=None):
-  return json.dumps(
-    {
-      'result': result,
-      'message': data
-    },
-    sort_keys=False, indent=2, ensure_ascii=False
-  )
-
-def notify(sckey, massage):
-  if sckey != '':
-    logging.info('正在推送通知...')
+def notify(sckey, status, massage):
+  if sckey.startswith('SC'):
+    logging.info('准备推送通知...')
     url = 'https://sc.ftqq.com/{}.send'.format(sckey)
-    data = {'text':'原神签到小助手', 'desp':massage}
+    data = {'text': '原神签到小助手 签到{}'.format(status), 'desp': massage}
     try:
       jdict = json.loads(
               requests.Session().post(url, data = data).text)
+    except Exception as e:
+      logging.error(e)
+      raise HTTPError
+    else:
       errmsg = jdict['errmsg']
       if errmsg == 'success':
         logging.info('推送成功')
       else:
-        logging.error('推送失败')
-        logging.error(jdict)
-    except Exception as e:
-      logging.error(e)
-      raise HTTPError
-
-    return jdict
+        logging.error('{}: {}'.format('推送失败', jdict))
   else:
-    logging.info('未配置SCKEY,正在跳过推送...')
+    logging.info('未配置SCKEY,正在跳过推送')
+
+  logging.info('签到{}: {}'.format(status, massage)) 
+  return logging.info('任务结束')
 
 
 if __name__ == '__main__':
@@ -210,42 +274,11 @@ if __name__ == '__main__':
   secret.append('')
   cookie = secret[0]
   sckey = secret[1]
-  jstr = Roles(cookie).get_roles()
-  result = makeResult('Failed', jstr)
-  ret = -1
+  seconds = random.randint(10, 300)
+  #seconds = random.randint(1, 3)
 
-  try:
-    rolesList = jstr['data']['list']
-    logging.info('Your account has been bound %s role(s)' %(len(rolesList)))
+  logging.info('将在 {} 秒后开始任务...'.format(seconds))
+  time.sleep(seconds)
 
-    for i in range(len(rolesList)):
-      seconds = random.randint(10, 300)
-      logging.info('Sleep for %s seconds ...' %(seconds))
-      time.sleep(seconds)
+  Sign(cookie).run()
 
-      try:
-        jdict = Sign(cookie).run()
-        jstr = json.dumps(jdict, ensure_ascii=False)
-        code = jdict['retcode']
-      except Exception as e:
-        jstr = str(e)
-
-      try:
-        code
-      except NameError:
-        code = -1
-
-      # 0:      success
-      # -5003:  already signed in
-      if code in [0, -5003]:
-        result = makeResult('Success', jstr)
-        ret = 0
-
-      logging.info(result)
-
-  except Exception as e:
-    logging.info(result)
-
-  notify(sckey, result)
-  logging.info('签到完成!')
-  exit(ret)
