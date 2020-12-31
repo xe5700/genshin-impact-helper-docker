@@ -228,7 +228,7 @@ class Sign(object):
             status = '成功'
             messageList.append(self.message().format(today, 
             self._regionNameList[i], uid, award['name'], award['cnt'], 
-            totalSignDay, jdict['message']))
+            totalSignDay, jdict['message'], ''))
           else:
             status = '失败'
             messageList = jdict
