@@ -201,9 +201,6 @@ class Sign(object):
         notify(sckey, '失败', message)
         exit(-1)
       else:
-        today = infoList[i]['data']['today']
-        totalSignDay = infoList[i]['data']['total_sign_day']
-        award = Roles(self._cookie).get_awards()['data']['awards'][totalSignDay - 1]
         uid = str(self._uidList[i]).replace(
           str(self._uidList[i])[3:6], '***', 1)
         data = {
@@ -226,6 +223,10 @@ class Sign(object):
           # -5003:  already signed in
           if code == 0:
             status = '成功'
+            today = infoList[i]['data']['today']
+            totalSignDay = infoList[i]['data']['total_sign_day'] + 1
+            award = Roles(self._cookie).get_awards()['data']['awards'][totalSignDay - 1]
+
             messageList.append(self.message().format(today, 
             self._regionNameList[i], uid, award['name'], award['cnt'], 
             totalSignDay, jdict['message'], ''))
