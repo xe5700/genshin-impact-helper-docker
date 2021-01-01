@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  # 是否允许从y1ndan/genshin-impact-helper同步代码
+  # auto merge from y1ndan/genshin-impact-helper, default: false
   ALLOW_MERGE: 'false'
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0
           ref: master
 
-      - name: Merge From y1ndan/genshin-impact-helper
+      - name: Auto merge
         if: ${{ env.ALLOW_MERGE != 'false' }}
         run: |
           git config --global user.name  github-actions
