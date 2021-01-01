@@ -44,7 +44,7 @@ class ConfMeta(type):
 
   @property
   def app_version(self):
-    return '2.1.0'
+    return '2.3.0'
 
   @property
   def ua(self):
@@ -127,14 +127,15 @@ class Sign(object):
         self.__class__, type(__name__), type(cookie)))
     self._cookie = cookie
 
-  # Provided by Steesha
   def md5(self, text):
     md5 = hashlib.md5()
     md5.update(text.encode())
     return md5.hexdigest()
 
   def get_DS(self):
-    n = self.md5(Conf.app_version)
+    # n = self.md5(2.1.0) # v2.1.0 @Steesha
+    # n = 'cx2y9z9a29tfqvr1qsq6c7yz99b5jsqt' # v2.2.0 @Womsxd
+    n = 'h8w582wxwgqvahcdkpvdhbh2w9casgfl' # v2.3.0 web @povsister & @journey-ad
     i = str(int(time.time()))
     r = ''.join(random.sample(string.ascii_lowercase + string.digits, 6))
     c = self.md5('salt=' + n + '&t='+ i + '&r=' + r)
@@ -162,8 +163,8 @@ class Sign(object):
     try:
       rolesList = roles['data']['list']
     except Exception as e:
-      massage = roles['massage']
-      notify(sckey, '失败', massage)
+      message = roles['message']
+      notify(sckey, '失败', message)
       exit(-1)
     else:
       logging.info('当前账号绑定了 {} 个角色'.format(len(rolesList)))
@@ -188,16 +189,16 @@ class Sign(object):
 
   def run(self):
     logging.info('任务开始')
-    massageList = []
+    messageList = []
     infoList = self.get_info()
     for i in range(len(infoList)):
       if infoList[i]['data']['is_sign'] is True:
       #if infoList[i]['data']['is_sign'] is False:
-        massage = '旅行者 {} 号,你已经签到过了'.format(i + 1)
-        notify(sckey, '成功', massage)
+        message = '旅行者 {} 号,你已经签到过了'.format(i + 1)
+        notify(sckey, '成功', message)
       elif infoList[i]['data']['first_bind'] is True:
-        massage = '旅行者 {} 号,请先前往米游社绑定账号'.format(i + 1)
-        notify(sckey, '失败', massage)
+        message = '旅行者 {} 号,请先前往米游社绑定账号'.format(i + 1)
+        notify(sckey, '失败', message)
         exit(-1)
       else:
         today = infoList[i]['data']['today']
@@ -225,16 +226,16 @@ class Sign(object):
           # -5003:  already signed in
           if code == 0:
             status = '成功'
-            massageList.append(self.massage().format(today, 
+            messageList.append(self.message().format(today, 
             self._regionNameList[i], uid, award['name'], award['cnt'], 
-            totalSignDay, jdict['massage']))
+            totalSignDay, jdict['message'], ''))
           else:
             status = '失败'
-            massageList = jdict
+            messageList = jdict
 
-        return notify(sckey, status, massageList)
+        return notify(sckey, status, messageList)
 
-  def massage(self):
+  def message(self):
     return '''
     {:#^30}
     🔅[{}]{}
@@ -245,11 +246,11 @@ class Sign(object):
     '''
 
 
-def notify(sckey, status, massage):
+def notify(sckey, status, message):
   if sckey.startswith('SC'):
     logging.info('准备推送通知...')
     url = 'https://sc.ftqq.com/{}.send'.format(sckey)
-    data = {'text': '原神签到小助手 签到{}'.format(status), 'desp': massage}
+    data = {'text': '原神签到小助手 签到{}'.format(status), 'desp': message}
     try:
       jdict = json.loads(
               requests.Session().post(url, data = data).text)
@@ -265,7 +266,7 @@ def notify(sckey, status, massage):
   else:
     logging.info('未配置SCKEY,正在跳过推送')
 
-  logging.info('签到{}: {}'.format(status, massage)) 
+  logging.info('签到{}: {}'.format(status, message)) 
   return logging.info('任务结束')
 
 
