@@ -44,12 +44,12 @@ class ConfMeta(type):
 
   @property
   def app_version(self):
-    return '2.2.1'
+    return '2.3.0'
 
   @property
   def ua(self):
     return 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0_1 like Mac OS X) Apple' \
-    'WebKit/605.1.15 (KHTML, like Gecko) miHoYoBBS/2.2.0'
+    'WebKit/605.1.15 (KHTML, like Gecko) miHoYoBBS/{}'.format(self.app_version)
 
   @property
   def act_id(self):
@@ -127,15 +127,15 @@ class Sign(object):
         self.__class__, type(__name__), type(cookie)))
     self._cookie = cookie
 
-  # Provided by Steesha
   def md5(self, text):
     md5 = hashlib.md5()
     md5.update(text.encode())
     return md5.hexdigest()
 
   def get_DS(self):
-    # n = self.md5(Conf.app_version) # V2.1.0
-    n = 'cx2y9z9a29tfqvr1qsq6c7yz99b5jsqt'
+    # n = self.md5(2.1.0) # v2.1.0 @Steesha
+    # n = 'cx2y9z9a29tfqvr1qsq6c7yz99b5jsqt' # v2.2.0 @Womsxd
+    n = 'h8w582wxwgqvahcdkpvdhbh2w9casgfl' # v2.3.0 web @povsister & @journey-ad
     i = str(int(time.time()))
     r = ''.join(random.sample(string.ascii_lowercase + string.digits, 6))
     c = self.md5('salt=' + n + '&t='+ i + '&r=' + r)
