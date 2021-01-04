@@ -115,6 +115,7 @@ class Roles(object):
 
     try:
       jdict
+      logging.info('账号信息获取完毕')
     except AttributeError:
       raise Exception(errstr)
 
@@ -164,9 +165,7 @@ class Sign(object):
     try:
       rolesList = roles['data']['list']
     except Exception as e:
-      message = roles['message']
-      notify(sckey, '失败', message)
-      exit(-1)
+      notify(sckey, '失败', roles['message'])
     else:
       logging.info('当前账号绑定了 {} 个角色'.format(len(rolesList)))
       infoList = []
@@ -183,6 +182,7 @@ class Sign(object):
         try:
           infoList.append(json.loads(requests.Session().get(
             info_url, headers = self.get_header()).text))
+          logging.info('签到信息获取完毕')
         except Exception as e:
           logging.error(e)
 
@@ -192,18 +192,23 @@ class Sign(object):
     logging.info('任务开始')
     messageList = []
     infoList = self.get_info()
+    status = '失败'
     for i in range(len(infoList)):
+      today = infoList[i]['data']['today']
+      totalSignDay = infoList[i]['data']['total_sign_day']
+      awards = Roles(self._cookie).get_awards()['data']['awards']
+      uid = str(self._uidList[i]).replace(
+          str(self._uidList[i])[3:6], '***', 1)
       if infoList[i]['data']['is_sign'] is True:
       #if infoList[i]['data']['is_sign'] is False:
-        message = '旅行者 {} 号,你已经签到过了'.format(i + 1)
-        notify(sckey, '成功', message)
+        status = '成功'
+        messageList.append(self.message().format(today, 
+            self._regionNameList[i], uid, 
+            awards[totalSignDay - 1]['name'], awards[totalSignDay - 1]['cnt'], 
+            totalSignDay, '旅行者 {} 号,你已经签到过了'.format(i + 1), ''))
       elif infoList[i]['data']['first_bind'] is True:
-        message = '旅行者 {} 号,请先前往米游社绑定账号'.format(i + 1)
-        notify(sckey, '失败', message)
-        exit(-1)
+        messageList.append('    旅行者 {} 号为首次绑定,请先前往米游社App手动签到一次'.format(i + 1))
       else:
-        uid = str(self._uidList[i]).replace(
-          str(self._uidList[i])[3:6], '***', 1)
         data = {
           'act_id': Conf.act_id,
           'region': self._regionList[i],
@@ -211,11 +216,12 @@ class Sign(object):
         }
 
         logging.info('准备为旅行者 {} 号签到...' \
-        '\nRegion: {}\nUID: {}'.format(i + 1, self._regionNameList[i], uid))
+        '\n区服: {}\nUID: {}'.format(i + 1, self._regionNameList[i], uid))
         try:
           jdict = json.loads(requests.Session().post(
             Conf.sign_url, headers = self.get_header(),
             data = json.dumps(data, ensure_ascii=False)).text)
+          logging.info('签到完毕')
         except Exception as e:
           raise
         else:
@@ -224,18 +230,15 @@ class Sign(object):
           # -5003:  already signed in
           if code == 0:
             status = '成功'
-            today = infoList[i]['data']['today']
-            totalSignDay = infoList[i]['data']['total_sign_day'] + 1
-            award = Roles(self._cookie).get_awards()['data']['awards'][totalSignDay - 1]
 
             messageList.append(self.message().format(today, 
-            self._regionNameList[i], uid, award['name'], award['cnt'], 
-            totalSignDay, jdict['message'], ''))
+            self._regionNameList[i], uid, 
+            awards[totalSignDay]['name'], awards[totalSignDay]['cnt'], 
+            totalSignDay + 1, jdict['message'], ''))
           else:
-            status = '失败'
-            messageList = jdict
+            messageList.append(jdict)
 
-        return notify(sckey, status, messageList)
+    return notify(sckey, status, messageList)
 
   def message(self):
     return '''
@@ -249,6 +252,7 @@ class Sign(object):
 
 
 def notify(sckey, status, message):
+  logging.info('签到{}: {}'.format(status, message)) 
   if sckey.startswith('SC'):
     logging.info('准备推送通知...')
     url = 'https://sc.ftqq.com/{}.send'.format(sckey)
@@ -266,10 +270,11 @@ def notify(sckey, status, message):
       else:
         logging.error('{}: {}'.format('推送失败', jdict))
   else:
-    logging.info('未配置SCKEY,正在跳过推送')
+    logging.info('未配置 SCKEY,正在跳过通知推送')
 
-  logging.info('签到{}: {}'.format(status, message)) 
-  return logging.info('任务结束')
+  logging.info('任务结束')
+  if status == '失败':
+    return exit(-1)
 
 
 if __name__ == '__main__':
