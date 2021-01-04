@@ -33,7 +33,7 @@ Genshin Impact Helper 可以自动化为你获取原神每日福利。
 
 - [x] **自动签到**  程序会在每天早上自动执行签到流程，也可以随时通过部署教程的`步骤4`手动触发，具体时间参照[此处](.github/workflows/main.yml)
 - [x] **支持订阅**  通过配置`SCKEY`开启订阅，每天将签到结果推送到微信上
-- [x] **支持多账号**  不同账号的`Cookie`之间用`#`分隔，如：`yourCookie1#yourCookie2`
+- [x] **支持多账号**  不同账号的`Cookie`之间用`#`分隔，如：`myCookie1#myCookie2`
 - [x] **支持多角色**  支持绑定官服和B站渠道服角色的米游社账号
 
 ## 📐部署
@@ -46,7 +46,11 @@ Genshin Impact Helper 可以自动化为你获取原神每日福利。
 - 项目地址：[github/genshin-impact-helper](https://github.com/y1ndan/genshin-impact-helper)
 - 点击右上角`Fork`到自己的账号下
 
-> ![fork](https://i.loli.net/2020/10/28/qpXowZmIWeEUyrJ.png)
+![fork](https://i.loli.net/2020/10/28/qpXowZmIWeEUyrJ.png)
+
+- 打开`Fork`后的仓库，将仓库默认分支设置为 master 分支
+
+![default-master](https://i.loli.net/2021/01/04/eRYf8hTAvcOQnBI.jpg)
 
 ### 2. 获取 Cookie
 
@@ -57,7 +61,9 @@ Genshin Impact Helper 可以自动化为你获取原神每日福利。
 - 按`F12`，打开`开发者工具`，找到`Network`并点击
 - 按`F5`刷新页面，按下图复制`Cookie`
 
-> ![cookie](https://i.loli.net/2020/10/28/TMKC6lsnk4w5A8i.png)
+![cookie](https://i.loli.net/2020/10/28/TMKC6lsnk4w5A8i.png)
+
+- 当触发`debugger`时，可尝试将`javascript:(function(){var i=setTimeout(function(){while(--i)clearTimeout(i)})}())`加入浏览器书签，然后点击一次该书签，便可绕过 debug 策略。来源[#56](https://github.com/y1ndan/genshin-impact-helper/issues/56#issuecomment-752985709)
 
 #### 2.2 方法二
 
@@ -82,7 +88,7 @@ if (ask == true) {
 
 - 回到项目页面，依次点击`Settings`-->`Secrets`-->`New secret`
 
-> ![new-secret.png](https://i.loli.net/2020/10/28/sxTuBFtRvzSgUaA.png)
+![new-secret.png](https://i.loli.net/2020/10/28/sxTuBFtRvzSgUaA.png)
 
 - 建立名为`COOKIE`的 secret，值为`步骤2`中复制的`Cookie`内容，最后点击`Add secret`
 
@@ -90,7 +96,7 @@ if (ask == true) {
 - secret名字必须为`COOKIE`！
 - secret名字必须为`COOKIE`！
 
-> ![add-secret](https://i.loli.net/2020/10/28/sETkVdmrNcCUpgq.png)
+![add-secret](https://i.loli.net/2020/10/28/sETkVdmrNcCUpgq.png)
 
 ### 4. 启用 Actions
 
