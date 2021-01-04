@@ -155,7 +155,7 @@ Error: Process completed with exit code 255.
 - 使用 GitHub 登录 [sc.ftqq.com](http://sc.ftqq.com/?c=github&a=login) 创建账号
 - 点击「[发送消息](http://sc.ftqq.com/?c=code)」，获取`SCKEY`
 - 点击「[微信推送](http://sc.ftqq.com/?c=wechat&a=bind)」，完成微信绑定
-- 建立名为`SCKEY`的 secret，并添加获取的 SCKEY 值，开启订阅推送
+- 建立名为`SCKEY`的 secret，并添加获取的 SCKEY 值，即可开启订阅推送。注意必须加上`-s`，例子：`-s <SCKEY>`
 
 ## ❗️协议
 
