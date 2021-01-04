@@ -278,7 +278,7 @@ def notify(sckey, status, message):
 
 
 if __name__ == '__main__':
-   secret = input().strip().split('#')
+  secret = input().strip().split('#')
   secret.append('')
   cookie = secret[0]
   sckey = secret[1]
