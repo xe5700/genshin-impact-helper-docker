@@ -63,7 +63,7 @@ Genshin Impact Helper 可以自动化为你获取原神每日福利。
 
 ![cookie](https://i.loli.net/2020/10/28/TMKC6lsnk4w5A8i.png)
 
-- 当触发`debugger`时，可尝试将`javascript:(function(){var i=setTimeout(function(){while(--i)clearTimeout(i)})}())`加入浏览器书签，然后点击一次该书签，便可绕过 debug 策略。来源[#56](https://github.com/y1ndan/genshin-impact-helper/issues/56#issuecomment-752985709)
+- 当触发`Debugger`时，可尝试按`Ctrl + F8`关闭，然后再次刷新页面，最后复制`Cookie`
 
 #### 2.2 方法二
 
@@ -104,7 +104,7 @@ if (ask == true) {
 
 返回项目主页面，点击上方的`Actions`，再点击左侧的`Genshin Impact Helper`，再点击`Run workflow`
     
-> ![run](https://i.loli.net/2020/10/28/5ylvgdYf9BDMqAH.png)
+![run](https://i.loli.net/2020/10/28/5ylvgdYf9BDMqAH.png)
 
 </details>
 
