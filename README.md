@@ -48,9 +48,7 @@ Genshin Impact Helper 可以自动化为你获取原神每日福利。
 
 ![fork](https://i.loli.net/2020/10/28/qpXowZmIWeEUyrJ.png)
 
-- 打开`Fork`后的仓库，将仓库默认分支设置为 master 分支
-
-![default-master](https://i.loli.net/2021/01/04/eRYf8hTAvcOQnBI.jpg)
+- 将仓库默认分支设置为 master 分支
 
 ### 2. 获取 Cookie
 
@@ -155,7 +153,7 @@ Error: Process completed with exit code 255.
 - 使用 GitHub 登录 [sc.ftqq.com](http://sc.ftqq.com/?c=github&a=login) 创建账号
 - 点击「[发送消息](http://sc.ftqq.com/?c=code)」，获取`SCKEY`
 - 点击「[微信推送](http://sc.ftqq.com/?c=wechat&a=bind)」，完成微信绑定
-- 建立名为`SCKEY`的 secret，并添加获取的 SCKEY 值，即可开启订阅推送。注意必须加上`-s`，例子：`-s <SCKEY>`
+- 建立名为`SCKEY`的 secret，并添加获取的 SCKEY 值，即可开启订阅推送
 
 ## ❗️协议
 

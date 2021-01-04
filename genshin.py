@@ -278,11 +278,10 @@ def notify(sckey, status, message):
 
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser()
-  parser.add_argument('-c', '--cookie', required=True, type=str, default='')
-  parser.add_argument('-s', '--sckey', type=str, default='')
-  args = parser.parse_args()
-  sckey = args.sckey
+   secret = input().strip().split('#')
+  secret.append('')
+  cookie = secret[0]
+  sckey = secret[1]
 
-  Sign(args.cookie).run()
+  Sign(cookie).run()
 
