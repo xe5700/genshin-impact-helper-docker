@@ -8,6 +8,8 @@ on:
 env:
   # auto merge from y1ndan/genshin-impact-helper, default: false
   ALLOW_MERGE: 'false'
+  RUN_ENV: 'prod'
+  TZ: 'Asia/Shanghai'
 
 jobs:
   build:
