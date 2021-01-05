@@ -216,7 +216,7 @@ class Sign(object):
         }
 
         logging.info('准备为旅行者 {} 号签到...' \
-        '\n区服: {}\nUID: {}'.format(i + 1, self._regionNameList[i], uid))
+        '\n    区服: {}\n    UID: {}'.format(i + 1, self._regionNameList[i], uid))
         try:
           jdict = json.loads(requests.Session().post(
             Conf.sign_url, headers = self.get_header(),
@@ -238,7 +238,7 @@ class Sign(object):
           else:
             messageList.append(jdict)
 
-    return notify(sckey, status, messageList)
+    return notify(sckey, status,  ",".join(messageList))
 
   def message(self):
     return '''
@@ -247,8 +247,7 @@ class Sign(object):
     今日奖励: {} × {}
     本月累签: {} 天
     签到结果: {}
-    {:#^30}
-    '''
+    {:#^30}'''
 
 
 def notify(sckey, status, message):
