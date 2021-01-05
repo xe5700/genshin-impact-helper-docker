@@ -1,286 +1,258 @@
-#!/usr/bin/env python3
+import hashlib
+import json
+import random
+import string
+import time
+import uuid
 
 import requests
-import argparse
-import json
-import uuid
-import logging
-import time
-import random
-import hashlib
-import string
 from requests.exceptions import *
 
-logging.basicConfig(
-  level = logging.INFO,
-  format = '%(asctime)s %(levelname)s %(message)s',
-  datefmt = '%Y-%m-%dT%H:%M:%S')
+from settings import *
 
 
-class ConfMeta(type):
-  @property
-  def ref_url(self):
-    return 'https://webstatic.mihoyo.com/bbs/event/signin-ys/index.html?' \
-    'bbs_auth_required={}&act_id={}&utm_source={}&utm_medium={}&' \
-    'utm_campaign={}'.format('true', self.act_id, 'bbs', 'mys', 'icon')
-
-  @property
-  def award_url(self):
-    return 'https://api-takumi.mihoyo.com/event/bbs_sign_reward/home?' \
-    'act_id={}'.format(self.act_id)
-
-  @property
-  def role_url(self):
-    return 'https://api-takumi.mihoyo.com/binding/api/' \
-    'getUserGameRolesByCookie?game_biz={}'.format('hk4e_cn')
-
-  @property
-  def info_url(self):
-    return 'https://api-takumi.mihoyo.com/event/bbs_sign_reward/info?' \
-    'region={}&act_id={}&uid={}'
-
-  @property
-  def sign_url(self):
-    return 'https://api-takumi.mihoyo.com/event/bbs_sign_reward/sign'
-
-  @property
-  def app_version(self):
-    return '2.3.0'
-
-  @property
-  def ua(self):
-    return 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0_1 like Mac OS X) Apple' \
-    'WebKit/605.1.15 (KHTML, like Gecko) miHoYoBBS/{}'.format(self.app_version)
-
-  @property
-  def act_id(self):
-    return 'e202009291139501'
-
-
-class Conf(metaclass=ConfMeta):
-  pass
-
-
-class Roles(object):
-  def __init__(self, cookie:str=None):
-    if type(cookie) is not str:
-      raise TypeError('%s want a %s but got %s' %(
-        self.__class__, type(__name__), type(cookie)))
-    self._cookie = cookie
-
-  def get_header(self):
-    return {
-      'User-Agent': Conf.ua,
-      'Referer': Conf.ref_url,
-      'Accept-Encoding': 'gzip, deflate, br',
-      'Cookie': self._cookie
-    }
-
-  def get_awards(self):
-    try:
-      jdict = json.loads(
-              requests.Session().get(
-                Conf.award_url, headers = self.get_header()).text)
-    except Exception as e:
-      logging.error(e)
-
-    return jdict
-
-  def get_roles(self):
-    logging.info('准备获取账号信息...')
-    errstr = None
-
-    for i in range(1, 4):
-      try:
-        jdict = json.loads(requests.Session().get(
-          Conf.role_url, headers = self.get_header()).text)
-      except HTTPError as e:
-        logging.error('HTTP error when get user game roles, ' \
-        'retry %s time(s) ...' %(i))
-        logging.error('error is %s' %(e))
-        errstr = str(e)
-        continue
-      except KeyError as e:
-        logging.error('Wrong response to get user game roles, ' \
-        'retry %s time(s) ...' %(i))
-        logging.error('response is %s' %(e))
-        errstr = str(e)
-        continue
-      except Exception as e:
-        logging.error('Unknown error %s, die' %(e))
-        errstr = str(e)
-        raise
-      else:
-        break
-
-    try:
-      jdict
-      logging.info('账号信息获取完毕')
-    except AttributeError:
-      raise Exception(errstr)
-
-    return jdict
-
-
-class Sign(object):
-  def __init__(self, cookie:str=None):
-    if type(cookie) is not str:
-      raise TypeError('%s want a %s but got %s' %(
-        self.__class__, type(__name__), type(cookie)))
-    self._cookie = cookie
-
-  def md5(self, text):
+def hexdigest(text):
     md5 = hashlib.md5()
     md5.update(text.encode())
     return md5.hexdigest()
 
-  def get_DS(self):
-    # n = self.md5(2.1.0) # v2.1.0 @Steesha
-    # n = 'cx2y9z9a29tfqvr1qsq6c7yz99b5jsqt' # v2.2.0 @Womsxd
-    n = 'h8w582wxwgqvahcdkpvdhbh2w9casgfl' # v2.3.0 web @povsister & @journey-ad
-    i = str(int(time.time()))
-    r = ''.join(random.sample(string.ascii_lowercase + string.digits, 6))
-    c = self.md5('salt=' + n + '&t='+ i + '&r=' + r)
-    return '{},{},{}'.format(i, r, c)
 
-  def get_header(self):
-    return {
-      'x-rpc-device_id': str(uuid.uuid3(
-        uuid.NAMESPACE_URL, self._cookie)).replace('-','').upper(),
-      # 1:  ios
-      # 2:  android
-      # 4:  pc web
-      # 5:  mobile web
-      'x-rpc-client_type': '5',
-      'Accept-Encoding': 'gzip, deflate, br',
-      'User-Agent': Conf.ua,
-      'Referer': Conf.ref_url,
-      'x-rpc-app_version': Conf.app_version,
-      'DS': self.get_DS(),
-      'Cookie': self._cookie
-    }
+class Base(object):
+    def __init__(self, cookies: str = None):
+        if not isinstance(cookies, str):
+            raise TypeError('%s want a %s but got %s' % (
+                self.__class__, type(__name__), type(cookies)))
+        self._cookie = cookies
 
-  def get_info(self):
-    roles = Roles(self._cookie).get_roles()
-    try:
-      rolesList = roles['data']['list']
-    except Exception as e:
-      notify(sckey, '失败', roles['message'])
-    else:
-      logging.info('当前账号绑定了 {} 个角色'.format(len(rolesList)))
-      infoList = []
-      # cn_gf01:  天空岛
-      # cn_qd01:  世界树
-      self._regionList = [(i.get('region', 'NA')) for i in rolesList]
-      self._regionNameList = [(i.get('region_name', 'NA')) for i in rolesList]
-      self._uidList = [(i.get('game_uid', 'NA')) for i in rolesList]
+    def get_header(self):
+        header = {
+            'User-Agent': CONFIG.USER_AGENT,
+            'Referer': CONFIG.REFERER_URL,
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Cookie': self._cookie
+        }
+        return header
 
-      logging.info('准备获取签到信息...')
-      for i in range(len(self._uidList)):
-        info_url = Conf.info_url.format(self._regionList[i], 
-        Conf.act_id, self._uidList[i])
+    @staticmethod
+    def to_python(json_str: str):
+        return json.loads(json_str)
+
+    @staticmethod
+    def to_json(obj):
+        return json.dumps(obj, indent=4, ensure_ascii=False)
+
+
+class Roles(Base):
+    def get_awards(self):
+        response = dict
         try:
-          infoList.append(json.loads(requests.Session().get(
-            info_url, headers = self.get_header()).text))
-          logging.info('签到信息获取完毕')
-        except Exception as e:
-          logging.error(e)
+            content = requests.Session().get(CONFIG.AWARD_URL, headers=self.get_header()).text
+            response = self.to_python(content)
+        except json.JSONDecodeError as e:
+            log.error(e)
 
-      return infoList
+        return response
 
-  def run(self):
-    logging.info('任务开始')
-    messageList = []
-    infoList = self.get_info()
-    status = '失败'
-    for i in range(len(infoList)):
-      today = infoList[i]['data']['today']
-      totalSignDay = infoList[i]['data']['total_sign_day']
-      awards = Roles(self._cookie).get_awards()['data']['awards']
-      uid = str(self._uidList[i]).replace(
-          str(self._uidList[i])[3:6], '***', 1)
-      if infoList[i]['data']['is_sign'] is True:
-      #if infoList[i]['data']['is_sign'] is False:
-        status = '成功'
-        messageList.append(self.message().format(today, 
-            self._regionNameList[i], uid, 
-            awards[totalSignDay - 1]['name'], awards[totalSignDay - 1]['cnt'], 
-            totalSignDay, '旅行者 {} 号,你已经签到过了'.format(i + 1), ''))
-      elif infoList[i]['data']['first_bind'] is True:
-        messageList.append('    旅行者 {} 号为首次绑定,请先前往米游社App手动签到一次'.format(i + 1))
-      else:
-        data = {
-          'act_id': Conf.act_id,
-          'region': self._regionList[i],
-          'uid': self._uidList[i]
+    def get_roles(self, max_attempt_number: int = 4):
+        log.info('准备获取账号信息...')
+        error = None
+        response = dict()
+
+        for i in range(1, max_attempt_number):
+            try:
+                content = requests.Session().get(CONFIG.ROLE_URL, headers=self.get_header()).text
+                response = self.to_python(content)
+            except HTTPError as error:
+                log.error('HTTP error when get user game roles, retry %s time(s) ...' % i)
+                log.error('error is %s' % error)
+                continue
+            except KeyError as error:
+                log.error('Wrong response to get user game roles, retry %s time(s) ...' % i)
+                log.error('response is %s' % error)
+                continue
+            except Exception as error:
+                log.error('Unknown error %s, die' % error)
+                raise error
+            error = None
+            break
+
+        if error:
+            log.error('Maximum retry times have been reached, error is %s ' % error)
+            raise error
+        if response.get('retcode', 1) != 0 or response.get('data', None) is None:
+            log.error(response)
+            exit(-1)
+
+        log.info("账号信息获取完毕")
+        return response
+
+
+class Sign(Base):
+    def __init__(self, cookies: str = None):
+        super(Sign, self).__init__(cookies)
+        self._region_list = []
+        self._region_name_list = []
+        self._uid_list = []
+
+    @staticmethod
+    def get_ds():
+        n = 'h8w582wxwgqvahcdkpvdhbh2w9casgfl'  # v2.3.0 web @povsister & @journey-ad
+        i = str(int(time.time()))
+        r = ''.join(random.sample(string.ascii_lowercase + string.digits, 6))
+        c = hexdigest('salt=' + n + '&t=' + i + '&r=' + r)
+        return '{},{},{}'.format(i, r, c)
+
+    def get_header(self):
+        header = super(Sign, self).get_header()
+        header.update({
+            'x-rpc-device_id': str(uuid.uuid3(uuid.NAMESPACE_URL, self._cookie)).replace('-', '').upper(),
+            # 1:  ios
+            # 2:  android
+            # 4:  pc web
+            # 5:  mobile web
+            'x-rpc-client_type': '5',
+            'x-rpc-app_version': CONFIG.APP_VERSION,
+            'DS': self.get_ds(),
+        })
+        return header
+
+    def get_info(self):
+        user_game_roles = Roles(self._cookie).get_roles()
+        role_list = user_game_roles.get('data', {}).get('list', [])
+
+        # role list empty
+        if not role_list:
+            notify(sc_secret, '失败', user_game_roles.get('message', 'role list empty'))
+            exit(-1)
+
+        log.info('当前账号绑定了 {} 个角色'.format(len(role_list)))
+        info_list = []
+        # cn_gf01:  天空岛
+        # cn_qd01:  世界树
+        self._region_list = [(i.get('region', 'NA')) for i in role_list]
+        self._region_name_list = [(i.get('region_name', 'NA')) for i in role_list]
+        self._uid_list = [(i.get('game_uid', 'NA')) for i in role_list]
+
+        log.info('准备获取签到信息...')
+        for i in range(len(self._uid_list)):
+            info_url = CONFIG.INFO_URL.format(self._region_list[i], CONFIG.ACT_ID, self._uid_list[i])
+            try:
+                content = requests.Session().get(info_url, headers=self.get_header()).text
+                info_list.append(self.to_python(content))
+            except Exception as e:
+                log.error(e)
+
+        if not info_list:
+            log.error("user sign info list is empty, exit...")
+            exit(-1)
+        log.info("签到信息获取完毕")
+        return info_list
+
+    def run(self):
+        log.info('任务开始')
+        status = "成功"
+        messages = {
+            'success': [],
+            'failed': [],
+            'already_signed_in': [],
         }
 
-        logging.info('准备为旅行者 {} 号签到...' \
-        '\n    区服: {}\n    UID: {}'.format(i + 1, self._regionNameList[i], uid))
+        info_list = self.get_info()
+        for i in range(len(info_list)):
+            today = info_list[i]['data']['today']
+            total_sign_day = info_list[i]['data']['total_sign_day']
+            award = Roles(self._cookie).get_awards()['data']['awards']
+            uid = str(self._uid_list[i]).replace(str(self._uid_list[i])[3:6], '***', 1)
+
+            # 已经签到, 处理下一个用户
+            if info_list[i]['data']['is_sign'] is True:
+                messages.get('already_signed_in', []).append("旅行者 {} 号, 你已经签到过了".format(i + 1))
+                continue
+            if info_list[i]['data']['first_bind'] is True:
+                messages.get('failed', []).append("旅行者 {} 号, 请先前往米游社App手动签到一次".format(i + 1))
+                exit(-1)
+
+            data = {
+                'act_id': CONFIG.ACT_ID,
+                'region': self._region_list[i],
+                'uid': self._uid_list[i]
+            }
+
+            log.info('准备为旅行者 {} 号签到... {}'.format(i + 1, self.to_json({
+                'Region': self._region_name_list[i],
+                'UID': uid
+            })))
+            try:
+                content = requests.Session().post(
+                    CONFIG.SIGN_URL,
+                    headers=self.get_header(),
+                    data=json.dumps(data, ensure_ascii=False)).text
+                response = self.to_python(content)
+            except Exception as e:
+                raise e
+            code = response.get('retcode', 99999)
+            # 0:      success
+            # -5003:  already signed in
+            if code == 0:
+                message = self.message.format(
+                        today,
+                        self._region_name_list[i],
+                        uid,
+                        award['name'],
+                        award['cnt'],
+                        total_sign_day + 1,
+                        response['message'],
+                        ''
+                )
+                messages.get('success', []).append(message)
+            else:
+                messages.get('failed', []).append(response)
+
+        if messages.get('failed', []):
+            status = "失败"
+
+        return notify(sc_secret, status, messages)
+
+    @property
+    def message(self):
+        return '''
+        {:#^30}
+        🔅[{}]{}
+        今日奖励: {} × {}
+        本月累签: {} 天
+        签到结果: {}
+        {:#^30}
+        '''
+
+
+def notify(secret: str, status: str, message):
+    if secret.startswith('SC'):
+        log.info('准备推送通知...')
+        url = 'https://sc.ftqq.com/{}.send'.format(secret)
+        data = {'text': '原神签到小助手 签到{}'.format(status), 'desp': message}
         try:
-          jdict = json.loads(requests.Session().post(
-            Conf.sign_url, headers = self.get_header(),
-            data = json.dumps(data, ensure_ascii=False)).text)
-          logging.info('签到完毕')
+            response = Sign.to_python(requests.Session().post(url, data=data).text)
         except Exception as e:
-          raise
+            log.error(e)
+            raise HTTPError
         else:
-          code = jdict['retcode']
-          # 0:      success
-          # -5003:  already signed in
-          if code == 0:
-            status = '成功'
-
-            messageList.append(self.message().format(today, 
-            self._regionNameList[i], uid, 
-            awards[totalSignDay]['name'], awards[totalSignDay]['cnt'], 
-            totalSignDay + 1, jdict['message'], ''))
-          else:
-            messageList.append(jdict)
-
-    return notify(sckey, status,  ",".join(messageList))
-
-  def message(self):
-    return '''
-    {:#^30}
-    🔅[{}]{}
-    今日奖励: {} × {}
-    本月累签: {} 天
-    签到结果: {}
-    {:#^30}'''
-
-
-def notify(sckey, status, message):
-  logging.info('签到{}: {}'.format(status, message)) 
-  if sckey.startswith('SC'):
-    logging.info('准备推送通知...')
-    url = 'https://sc.ftqq.com/{}.send'.format(sckey)
-    data = {'text': '原神签到小助手 签到{}'.format(status), 'desp': message}
-    try:
-      jdict = json.loads(
-              requests.Session().post(url, data = data).text)
-    except Exception as e:
-      logging.error(e)
-      raise HTTPError
+            errmsg = response['errmsg']
+            if errmsg == 'success':
+                log.info('推送成功')
+            else:
+                log.error('{}: {}'.format('推送失败', response))
     else:
-      errmsg = jdict['errmsg']
-      if errmsg == 'success':
-        logging.info('推送成功')
-      else:
-        logging.error('{}: {}'.format('推送失败', jdict))
-  else:
-    logging.info('未配置 SCKEY,正在跳过通知推送')
-
-  logging.info('任务结束')
-  if status == '失败':
-    return exit(-1)
+        log.info('未配置SCKEY,正在跳过推送')
+    if isinstance(message, list) or isinstance(message, dict):
+        message = Sign.to_json(message)
+    log.info('签到{}: {}'.format(status, message))
+    return log.info('任务结束')
 
 
 if __name__ == '__main__':
-  secret = input().strip().split('#')
-  secret.append('')
-  cookie = secret[0]
-  sckey = secret[1]
+    secret = input().strip().split('#')
+    secret.append('')
+    cookie = secret[0]
+    sc_secret = secret[1]
 
-  Sign(cookie).run()
-
+    Sign(cookie).run()
