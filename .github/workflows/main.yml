@@ -9,6 +9,7 @@ env:
   # auto merge from PomeloWang/genshin-impact-helper, default: false
   ALLOW_MERGE: 'false'
   RUN_ENV: 'prod'
+  TZ: 'Asia/Shanghai'
 
 jobs:
   build:
@@ -16,11 +17,6 @@ jobs:
     # if: github.ref == 'refs/heads/master'
 
     steps:
-      - name: Set Timezone
-        uses: actions/set-timezone-action@v1.1
-        with:
-          timezoneLinux: "Asia/Shanghai"
-
       - name: Checkout master
         uses: actions/checkout@v2
         with:
