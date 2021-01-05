@@ -146,6 +146,49 @@ Error: Process completed with exit code 255.
 
 </details>
 
+## 🔨开发
+
+如果需要重构或增加额外功能参考以下数据
+
+```python
+roles = Roles(cookie).get_roles()
+roles = {
+    'retcode': 0,
+    'message': 'OK',
+    'data': {
+        'list': [
+            {
+                'game_biz': 'hk4e_cn',
+                'region': 'cn_gf01',
+                'game_uid': '111111111',
+                'nickname': '酸柚子',
+                'level': 48,
+                'is_chosen': False,
+                'region_name': '天空岛',
+                'is_official': True
+            }
+        ]
+    }
+}
+```
+```python
+infos = Sign(cookie).get_info()
+infos = [
+    {
+        'retcode': 0,
+        'message': 'OK',
+        'data': {
+            'total_sign_day': 5,
+            'today': '2021-01-05',
+            'is_sign': True,
+            'first_bind': False,
+            'is_sub': False,
+            'month_first': False
+        }
+    }
+]
+
+```
 ## 🔔订阅
 
 若开启订阅推送，无论成功与否，都会收到微信通知。
