@@ -6,8 +6,9 @@ on:
   workflow_dispatch:
 
 env:
-  # auto merge from y1ndan/genshin-impact-helper, default: false
+  # auto merge from PomeloWang/genshin-impact-helper, default: false
   ALLOW_MERGE: 'false'
+  RUN_ENV: 'prod'
 
 jobs:
   build:
@@ -26,7 +27,7 @@ jobs:
         run: |
           git config --global user.name  github-actions
           git config --global user.email github-actions@github.com
-          git remote add upstream https://github.com/y1ndan/genshin-impact-helper
+          git remote add upstream https://github.com/PomeloWang/genshin-impact-helper
           git pull upstream master --allow-unrelated-histories
           git push origin master
 
