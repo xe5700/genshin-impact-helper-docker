@@ -39,7 +39,7 @@ class Base(object):
 
     @staticmethod
     def to_json(obj):
-        return json.dumps(obj, indent=4)
+        return json.dumps(obj, indent=4, ensure_ascii=False)
 
 
 class Roles(Base):
@@ -83,6 +83,7 @@ class Roles(Base):
             log.error(response)
             exit(-1)
 
+        log.info("账号信息获取完毕")
         return response
 
 
@@ -121,8 +122,7 @@ class Sign(Base):
 
         # role list empty
         if not role_list:
-            message = user_game_roles.get('message', 'role list empty')
-            notify(sc_secret, '失败', message)
+            notify(sc_secret, '失败', user_game_roles.get('message', 'role list empty'))
             exit(-1)
 
         log.info('当前账号绑定了 {} 个角色'.format(len(role_list)))
@@ -145,32 +145,33 @@ class Sign(Base):
         if not info_list:
             log.error("user sign info list is empty, exit...")
             exit(-1)
+        log.info("签到信息获取完毕")
         return info_list
 
     def run(self):
         log.info('任务开始')
         status = "成功"
         messages = {
-            'success_message': [],
-            'failed_message': [],
-            'already_signed_in': []
+            'success': [],
+            'failed': [],
+            'already_signed_in': [],
         }
 
         info_list = self.get_info()
         for i in range(len(info_list)):
-            # 已经签到, 处理下一个用户
-            if info_list[i]['data']['is_sign'] is True:
-                message = '旅行者 {} 号, 你已经签到过了'.format(i + 1)
-                messages['already_signed_in'] = messages.get('already_signed_in', []).append(message)
-                continue
-            if info_list[i]['data']['first_bind'] is True:
-                message = '旅行者 {} 号,请先前往米游社绑定账号'.format(i + 1)
-                messages['failed_message'] = messages.get('failed_message', []).append(message)
-                exit(-1)
             today = info_list[i]['data']['today']
             total_sign_day = info_list[i]['data']['total_sign_day']
-            award = Roles(self._cookie).get_awards()['data']['awards'][total_sign_day - 1]
+            award = Roles(self._cookie).get_awards()['data']['awards']
             uid = str(self._uid_list[i]).replace(str(self._uid_list[i])[3:6], '***', 1)
+
+            # 已经签到, 处理下一个用户
+            if info_list[i]['data']['is_sign'] is True:
+                messages.get('already_signed_in', []).append("旅行者 {} 号, 你已经签到过了".format(i + 1))
+                continue
+            if info_list[i]['data']['first_bind'] is True:
+                messages.get('failed', []).append("旅行者 {} 号, 请先前往米游社App手动签到一次".format(i + 1))
+                exit(-1)
+
             data = {
                 'act_id': CONFIG.ACT_ID,
                 'region': self._region_list[i],
@@ -199,15 +200,15 @@ class Sign(Base):
                         uid,
                         award['name'],
                         award['cnt'],
-                        total_sign_day,
+                        total_sign_day + 1,
                         response['message'],
                         ''
                 )
-                messages['success_message'] = messages.get('success_message', []).append(message)
+                messages.get('success', []).append(message)
             else:
-                messages['failed_message'] = messages.get('failed_message', []).append(response)
+                messages.get('failed', []).append(response)
 
-        if messages.get('failed_message', []):
+        if messages.get('failed', []):
             status = "失败"
 
         return notify(sc_secret, status, messages)
@@ -253,9 +254,5 @@ if __name__ == '__main__':
     secret.append('')
     cookie = secret[0]
     sc_secret = secret[1]
-
-    seconds = random.randint(10, 300)
-    log.info('将在 {} 秒后开始任务...'.format(seconds))
-    time.sleep(seconds)
 
     Sign(cookie).run()
