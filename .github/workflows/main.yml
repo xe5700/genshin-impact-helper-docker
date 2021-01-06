@@ -46,4 +46,3 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           echo '${{ secrets.COOKIE }}' | tr '#' '\n' | sed 's/$/&#${{ secrets.SCKEY }}/g' | xargs -I {} sh -c 'echo "{}" | python3 ./genshin.py'
-

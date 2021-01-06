@@ -198,8 +198,8 @@ class Sign(Base):
                         today,
                         self._region_name_list[i],
                         uid,
-                        award['name'],
-                        award['cnt'],
+                        award[total_sign_day]['name'],
+                        award[total_sign_day]['cnt'],
                         total_sign_day + 1,
                         response['message'],
                         ''
