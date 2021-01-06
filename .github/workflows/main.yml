@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  # auto merge from PomeloWang/genshin-impact-helper, default: false
+  # auto merge from y1ndan/genshin-impact-helper, default: false
   ALLOW_MERGE: 'false'
   RUN_ENV: 'prod'
   TZ: 'Asia/Shanghai'
@@ -28,7 +28,7 @@ jobs:
         run: |
           git config --global user.name  github-actions
           git config --global user.email github-actions@github.com
-          git remote add upstream https://github.com/PomeloWang/genshin-impact-helper
+          git remote add upstream https://github.com/y1ndan/genshin-impact-helper
           git pull upstream master --allow-unrelated-histories
           git push origin master
 
@@ -46,4 +46,3 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           echo '${{ secrets.COOKIE }}' | tr '#' '\n' | sed 's/$/&#${{ secrets.SCKEY }}/g' | xargs -I {} sh -c 'echo "{}" | python3 ./genshin.py'
-
