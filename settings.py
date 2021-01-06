@@ -44,3 +44,14 @@ else:
 
 log.basicConfig(level=CONFIG.LOG_LEVEL)
 
+
+MESSGAE_TEMPLATE = '''
+    {today:#^30}
+    🔅[{region_name}]{uid}
+    今日奖励: {award_name} × {award_cnt}
+    本月累签: {total_sign_day} 天
+    签到结果: {status}
+    {end:#^30}
+'''
+
+CONFIG.MESSGAE_TEMPLATE = MESSGAE_TEMPLATE

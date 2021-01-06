@@ -150,27 +150,33 @@ class Sign(Base):
 
     def run(self):
         log.info('任务开始')
-        status = "成功"
-        messages = {
-            'success': [],
-            'failed': [],
-            'already_signed_in': [],
-        }
 
         info_list = self.get_info()
+        # TODO 其实只会循环一次...
         for i in range(len(info_list)):
             today = info_list[i]['data']['today']
             total_sign_day = info_list[i]['data']['total_sign_day']
             award = Roles(self._cookie).get_awards()['data']['awards']
             uid = str(self._uid_list[i]).replace(str(self._uid_list[i])[3:6], '***', 1)
 
-            # 已经签到, 处理下一个用户
+            messgae = {
+                'today': today,
+                'region_name': self._region_name_list[i],
+                'uid': uid,
+                'award_name': award[total_sign_day]['name'],
+                'award_cnt': award[total_sign_day]['cnt'],
+                'end': '',
+            }
             if info_list[i]['data']['is_sign'] is True:
-                messages.get('already_signed_in', []).append("旅行者 {} 号, 你已经签到过了".format(i + 1))
+                messgae['total_sign_day'] = total_sign_day + 1
+                messgae['status'] = "👀 旅行者 {} 号, 你已经签到过了哦".format(i + 1)
+                notify(sc_secret, "成功", self.message.format(**messgae))
                 continue
             if info_list[i]['data']['first_bind'] is True:
-                messages.get('failed', []).append("旅行者 {} 号, 请先前往米游社App手动签到一次".format(i + 1))
-                exit(-1)
+                messgae['total_sign_day'] = total_sign_day
+                messgae['status'] = "💪 旅行者 {} 号, 请先前往米游社App手动签到一次".format(i + 1)
+                notify(sc_secret, "失败", self.message.format(**messgae))
+                continue
 
             data = {
                 'act_id': CONFIG.ACT_ID,
@@ -193,39 +199,23 @@ class Sign(Base):
             code = response.get('retcode', 99999)
             # 0:      success
             # -5003:  already signed in
-            if code == 0:
-                message = self.message.format(
-                        today,
-                        self._region_name_list[i],
-                        uid,
-                        award[total_sign_day]['name'],
-                        award[total_sign_day]['cnt'],
-                        total_sign_day + 1,
-                        response['message'],
-                        ''
-                )
-                messages.get('success', []).append(message)
-            else:
-                messages.get('failed', []).append(response)
-
-        if messages.get('failed', []):
-            status = "失败"
-
-        return notify(sc_secret, status, messages)
+            if code != 0:
+                notify(sc_secret, "失败", response)
+                continue
+            messgae['total_sign_day'] = total_sign_day + 1
+            messgae['status'] = response['message']
+            notify(sc_secret, "成功", self.message.format(**messgae))
 
     @property
     def message(self):
-        return '''
-        {:#^30}
-        🔅[{}]{}
-        今日奖励: {} × {}
-        本月累签: {} 天
-        签到结果: {}
-        {:#^30}
-        '''
+        return CONFIG.MESSGAE_TEMPLATE
 
 
 def notify(secret: str, status: str, message):
+    if isinstance(message, list) or isinstance(message, dict):
+        message = Sign.to_json(message)
+    log.info('签到{}: {}'.format(status, message))
+
     if secret.startswith('SC'):
         log.info('准备推送通知...')
         url = 'https://sc.ftqq.com/{}.send'.format(secret)
@@ -243,9 +233,6 @@ def notify(secret: str, status: str, message):
                 log.error('{}: {}'.format('推送失败', response))
     else:
         log.info('未配置SCKEY,正在跳过推送')
-    if isinstance(message, list) or isinstance(message, dict):
-        message = Sign.to_json(message)
-    log.info('签到{}: {}'.format(status, message))
     return log.info('任务结束')
 
 
