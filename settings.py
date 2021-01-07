@@ -51,7 +51,6 @@ MESSGAE_TEMPLATE = '''
     今日奖励: {award_name} × {award_cnt}
     本月累签: {total_sign_day} 天
     签到结果: {status}
-    {end:#^30}
-'''
+    {end:#^30}'''
 
 CONFIG.MESSGAE_TEMPLATE = MESSGAE_TEMPLATE
