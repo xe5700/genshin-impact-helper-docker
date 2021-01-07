@@ -18,7 +18,7 @@ def hexdigest(text):
 
 
 class Base(object):
-    def __init__(self, cookies: str = None):
+    def __init__(self, cookies: str=None):
         if not isinstance(cookies, str):
             raise TypeError('%s want a %s but got %s' % (
                 self.__class__, type(__name__), type(cookies)))
@@ -44,7 +44,7 @@ class Base(object):
 
 class Roles(Base):
     def get_awards(self):
-        response = dict
+        response = dict()
         try:
             content = requests.Session().get(CONFIG.AWARD_URL, headers=self.get_header()).text
             response = self.to_python(content)
@@ -53,7 +53,7 @@ class Roles(Base):
 
         return response
 
-    def get_roles(self, max_attempt_number: int = 4):
+    def get_roles(self, max_attempt_number: int=4):
         log.info('准备获取账号信息...')
         error = None
         response = dict()
@@ -88,7 +88,7 @@ class Roles(Base):
 
 
 class Sign(Base):
-    def __init__(self, cookies: str = None):
+    def __init__(self, cookies: str=None):
         super(Sign, self).__init__(cookies)
         self._region_list = []
         self._region_name_list = []
@@ -96,7 +96,8 @@ class Sign(Base):
 
     @staticmethod
     def get_ds():
-        n = 'h8w582wxwgqvahcdkpvdhbh2w9casgfl'  # v2.3.0 web @povsister & @journey-ad
+        # v2.3.0-web @povsister & @journey-ad
+        n = 'h8w582wxwgqvahcdkpvdhbh2w9casgfl'
         i = str(int(time.time()))
         r = ''.join(random.sample(string.ascii_lowercase + string.digits, 6))
         c = hexdigest('salt=' + n + '&t=' + i + '&r=' + r)
@@ -156,24 +157,25 @@ class Sign(Base):
         for i in range(len(info_list)):
             today = info_list[i]['data']['today']
             total_sign_day = info_list[i]['data']['total_sign_day']
-            award = Roles(self._cookie).get_awards()['data']['awards']
+            awards = Roles(self._cookie).get_awards()['data']['awards']
             uid = str(self._uid_list[i]).replace(str(self._uid_list[i])[3:6], '***', 1)
 
             messgae = {
                 'today': today,
                 'region_name': self._region_name_list[i],
                 'uid': uid,
-                'award_name': award[total_sign_day]['name'],
-                'award_cnt': award[total_sign_day]['cnt'],
+                'award_name': awards[total_sign_day]['name'],
+                'award_cnt': awards[total_sign_day]['cnt'],
+                'total_sign_day': total_sign_day,
                 'end': '',
             }
             if info_list[i]['data']['is_sign'] is True:
-                messgae['total_sign_day'] = total_sign_day + 1
+                messgae['award_name'] = awards[total_sign_day - 1]['name']
+                messgae['award_cnt'] = awards[total_sign_day - 1]['cnt']
                 messgae['status'] = "👀 旅行者 {} 号, 你已经签到过了哦".format(i + 1)
                 notify(sc_secret, "成功", self.message.format(**messgae))
                 continue
             if info_list[i]['data']['first_bind'] is True:
-                messgae['total_sign_day'] = total_sign_day
                 messgae['status'] = "💪 旅行者 {} 号, 请先前往米游社App手动签到一次".format(i + 1)
                 notify(sc_secret, "失败", self.message.format(**messgae))
                 continue
@@ -185,7 +187,7 @@ class Sign(Base):
             }
 
             log.info('准备为旅行者 {} 号签到... {}'.format(i + 1, self.to_json({
-                'Region': self._region_name_list[i],
+                '区服': self._region_name_list[i],
                 'UID': uid
             })))
             try:
