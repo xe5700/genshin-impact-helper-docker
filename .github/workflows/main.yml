@@ -6,8 +6,6 @@ on:
   workflow_dispatch:
 
 env:
-  # auto merge from y1ndan/genshin-impact-helper, default: false
-  ALLOW_MERGE: 'false'
   RUN_ENV: 'prod'
   TZ: 'Asia/Shanghai'
 
@@ -21,16 +19,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-          ref: master
-
-      - name: Auto merge
-        if: ${{ env.ALLOW_MERGE != 'false' }}
-        run: |
-          git config --global user.name  github-actions
-          git config --global user.email github-actions@github.com
-          git remote add upstream https://github.com/y1ndan/genshin-impact-helper
-          git pull upstream master --allow-unrelated-histories
-          git push origin master
+          # ref: master
 
       - name: Set up python
         uses: actions/setup-python@v2
@@ -42,7 +31,23 @@ jobs:
         run: sleep $(shuf -i 10-300 -n 1)
 
       - name: Run sign
+        env:
+          COOKIE: ${{ secrets.COOKIE }}
+          SCKEY: ${{ secrets.SCKEY }}
+          COOL_PUSH_SKEY: ${{ secrets.COOL_PUSH_SKEY }}
+          COOL_PUSH_MODE: ${{ secrets.COOL_PUSH_MODE }}
+          BARK_KEY: ${{ secrets.BARK_KEY }}
+          BARK_SOUND: ${{ secrets.BARK_SOUND }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_USER_ID: ${{ secrets.TG_USER_ID }}
+          DD_BOT_TOKEN: ${{ secrets.DD_BOT_TOKEN }}
+          DD_BOT_SECRET: ${{ secrets.DD_BOT_SECRET }}
+          WW_BOT_KEY: ${{ secrets.WW_BOT_KEY }}
+          IGOT_KEY: ${{ secrets.IGOT_KEY }}
+          PUSH_PLUS_TOKEN: ${{ secrets.PUSH_PLUS_TOKEN }}
+          PUSH_PLUS_USER: ${{ secrets.PUSH_PLUS_USER }}
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          echo '${{ secrets.COOKIE }}' | tr '#' '\n' | sed 's/$/&#${{ secrets.SCKEY }}/g' | xargs -I {} sh -c 'echo "{}" | python3 ./genshin.py'
+          python3 ./genshin.py
+          # echo '${{ secrets.COOKIE }}' | tr '#' '\n' | sed 's/$/&#${{ secrets.SCKEY }}/g' | xargs -I {} sh -c 'echo "{}" | python3 ./genshin.py'

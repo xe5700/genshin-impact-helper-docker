@@ -46,11 +46,12 @@ log.basicConfig(level=CONFIG.LOG_LEVEL)
 
 
 MESSGAE_TEMPLATE = '''
-    {today:#^30}
+    {today:#^28}
     🔅[{region_name}]{uid}
     今日奖励: {award_name} × {award_cnt}
     本月累签: {total_sign_day} 天
     签到结果: {status}
-    {end:#^30}'''
+    {end:#^28}'''
 
 CONFIG.MESSGAE_TEMPLATE = MESSGAE_TEMPLATE
+
