@@ -126,6 +126,20 @@ class Notify(object):
     if os.environ.get('PUSH_PLUS_USER', '') != '':
         PUSH_PLUS_USER = os.environ['PUSH_PLUS_USER']
 
+    # ============================== WeChat Work ==========================
+    # 此处填你企业微信应用的access_token(详见文档 https://work.weixin.qq.com/api/doc/90000/90135/90236)
+    # 注: Github Actions用户请到Settings->Secrets里设置,Name=WW_TOKEN,Value=<获取的值>
+    WW_TOKEN = ''
+    WW_USER_ID = ''
+    AGENTID = ''
+
+    if os.environ.get('WW_TOKEN', '') != '':
+        WW_TOKEN = os.environ['WW_TOKEN']
+    if os.environ.get('WW_USER_ID', '') != '':
+        WW_USER_ID = os.environ['WW_USER_ID']
+    if os.environ.get('AGENTID', '') != '':
+        AGENTID = os.environ['AGENTID']    
+
     def serverChan(self, text, status, desp):
         if Notify.SCKEY != '':
             url = 'https://sc.ftqq.com/{}.send'.format(Notify.SCKEY)
@@ -266,11 +280,11 @@ class Notify(object):
                 raise HTTPError
             else:
                 if response['errcode'] == 0:
-                    log.info('企业微信推送成功')
+                    log.info('企业微信机器人推送成功')
                 else:
-                    log.error('企业微信推送失败:\n{}'.format(response))
+                    log.error('企业微信机器人推送失败:\n{}'.format(response))
         else:
-            log.info('您未配置企业微信推送所需的WW_BOT_KEY,取消企业微信推送')
+            log.info('您未配置企业微信机器人推送所需的WW_BOT_KEY,取消企业微信机器人推送')
             pass
 
     def iGot(self, text, status, desp):
@@ -314,6 +328,32 @@ class Notify(object):
             log.info('您未配置pushplus推送所需的PUSH_PLUS_TOKEN,取消pushplus推送')
             pass
 
+    def weChatWork(self, text, status, desp):
+        if Notify.WW_TOKEN != '':
+            url = 'https://qyapi.weixin.qq.com/cgi-bin/message/send?' \
+                f'access_token={Notify.WW_TOKEN}'
+            data = {
+                'touser': Notify.WW_USER_ID,
+                'msgtype': 'text',
+                "agentid" : Notify.AGENTID,
+                'text': {
+                    'content': f'{text} {status}\n\n{desp}'
+                }
+            }
+            try:
+                response = self.to_python(requests.post(url, json=data).text)
+            except Exception as e:
+                log.error(e)
+                raise HTTPError
+            else:
+                if response['errcode'] == 0:
+                    log.info('企业微信应用消息推送成功')
+                else:
+                    log.error('企业微信应用消息推送失败:\n{}'.format(response))
+        else:
+            log.info('您未配置企业微信应用消息推送所需的WW_TOKEN,取消企业微信应用消息推送')
+            pass
+
     def send(self, **kwargs):
         app = '原神签到小助手'
         status = kwargs.get('status', '')
@@ -332,6 +372,7 @@ class Notify(object):
         self.wwBot(app, status, msg)
         self.iGot(app, status, msg)
         self.pushPlus(app, status, msg)
+        self.weChatWork(app, status, msg)
 
 
 if __name__ == '__main__':
