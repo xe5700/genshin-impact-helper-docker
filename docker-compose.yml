@@ -1,0 +1,7 @@
+version: "3"
+
+services:
+  genshin-impact-helper:
+     image: xe5700/genshin-impact-helper
+     environment:
+       COOKIES: '上一步复制的COOKIE'

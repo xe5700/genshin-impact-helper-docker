@@ -236,7 +236,8 @@ if (ask == true) {
 |   WW_BOT_KEY      | ❌         |                    |   企业微信机器人的webhook KEY                                      |
 |   IGOT_KEY        | ❌         |                    |   iGot推送所需的KEY                                                |
 |   PUSH_PLUS_TOKEN | ❌         |                    |   pushplus一对一推送或一对多推送下面的Token                         |
-|   PUSH_PLUS_USER  | ❌         | 一对一推送          |   pushplus一对多推送的'群组编码'                                   |
+|   PUSH_PLUS_USER  | ❌         | 一对一推送           |   pushplus一对多推送的'群组编码'                                   |
+|   CRON_SIGNIN     | ❌         | 30 9 * * *         |   DOCKER脚本的自动签到计划任务                                   |
 
 ## 🔨开发
 
