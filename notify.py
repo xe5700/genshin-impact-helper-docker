@@ -274,7 +274,7 @@ class Notify(object):
                 }
             }
             try:
-                response = self.to_python(requests.post(url, data=data).text)
+                response = self.to_python(requests.post(url, json=data).text)
             except Exception as e:
                 log.error(e)
                 raise HTTPError
