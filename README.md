@@ -237,6 +237,10 @@ if (ask == true) {
 |   IGOT_KEY        | ❌         |                    |   iGot推送所需的KEY                                                |
 |   PUSH_PLUS_TOKEN | ❌         |                    |   pushplus一对一推送或一对多推送下面的Token                         |
 |   PUSH_PLUS_USER  | ❌         | 一对一推送           |   pushplus一对多推送的'群组编码'                                   |
+|   WW_ID           | ❌         |                    |   企业ID                                                          |
+|   WW_APP_SECRET   | ❌         |                    |   应用Secret                                                      |
+|   WW_APP_USERID   | ❌         |                    |   推送对象ID，不懂则填写@all                                        |
+|   WW_APP_AGENTID  | ❌         |                    |   应用AgentId                                                     |
 |   CRON_SIGNIN     | ❌         | 30 9 * * *         |   DOCKER脚本的自动签到计划任务                                   |
 
 ## 🔨开发
