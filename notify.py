@@ -2,7 +2,7 @@
 @File                : notify.py
 @Github              : https://github.com/y1ndan/genshin-impact-helper
 @Last modified by    : y1ndan
-@Last modified time  : 2021-01-30 15:43:57
+@Last modified time  : 2021-01-30 19:14:27
 '''
 import os
 import time
@@ -100,20 +100,15 @@ class Notify(object):
         if 'SCKEY' in os.environ:
             SCKEY = os.environ['SCKEY']
 
-        conf = {
-            'name': 'Server酱',
-            'needs': 'SCKEY',
-            'token': SCKEY,
-            'text': 'errno',
-            'code': 0,
-            'url': f'https://sc.ftqq.com/{SCKEY}.send',
-            'data': {
-                'text': f'{text} {status}',
-                'desp': desp
-            }
+        url = f'https://sc.ftqq.com/{SCKEY}.send'
+        data = {
+            'text': f'{text} {status}',
+            'desp': desp
         }
+        conf = ['Server酱', 'SCKEY', SCKEY, 'errno', 0]
+        name, needs, token, text, code  = conf
 
-        return self.pushTemplate('post', conf['url'], data=conf['data'], name=conf['name'], needs=conf['needs'], token=conf['token'], text=conf['text'], code=conf['code'])
+        return self.pushTemplate('post', url, data=data, name=name, needs=needs, token=token, text=text, code=code)
 
     def coolPush(self, text, status, desp):
         COOL_PUSH_SKEY = self.COOL_PUSH_SKEY
@@ -124,17 +119,12 @@ class Notify(object):
         if 'COOL_PUSH_MODE' in os.environ:
             COOL_PUSH_MODE = os.environ['COOL_PUSH_MODE']
 
-        conf = {
-            'name': 'Cool Push',
-            'needs': 'COOL_PUSH_SKEY',
-            'token': COOL_PUSH_SKEY,
-            'text': 'code',
-            'code': 200,
-            'url': f'https://push.xuthus.cc/{COOL_PUSH_MODE}/{COOL_PUSH_SKEY}',
-            'data': f'{text} {status}\n\n{desp}'.encode('utf-8')
-        }
+        url = f'https://push.xuthus.cc/{COOL_PUSH_MODE}/{COOL_PUSH_SKEY}'
+        data = f'{text} {status}\n\n{desp}'.encode('utf-8')
+        conf = ['Cool Push', 'COOL_PUSH_SKEY', COOL_PUSH_SKEY, 'code', 200]
+        name, needs, token, text, code  = conf
 
-        return self.pushTemplate('post', conf['url'], data=conf['data'], name=conf['name'], needs=conf['needs'], token=conf['token'], text=conf['text'], code=conf['code'])
+        return self.pushTemplate('post', url, data=data, name=name, needs=needs, token=token, text=text, code=code)
 
     def bark(self, text, status, desp):
         BARK_KEY = self.BARK_KEY
@@ -146,26 +136,22 @@ class Notify(object):
             else:
                 BARK_KEY = f"https://api.day.app/{os.environ['BARK_KEY']}"
         # 本地只填写设备码的用户
-        elif BARK_KEY and BARK_KEY.find('https') == -1 and BARK_KEY.find('http') == -1:
+        elif BARK_KEY and BARK_KEY.find(
+            'https') == -1 and BARK_KEY.find('http') == -1:
             BARK_KEY = f'https://api.day.app/{BARK_KEY}'
 
         BARK_SOUND = self.BARK_SOUND
         if 'BARK_SOUND' in os.environ:
             BARK_SOUND = os.environ['BARK_SOUND']
 
-        conf = {
-            'name': 'Bark App',
-            'needs': 'BARK_KEY',
-            'token': BARK_KEY,
-            'text': 'code',
-            'code': 200,
-            'url': f'{BARK_KEY}/{text} {status}/{parse.quote(desp)}',
-            'data': {
-                'sound': BARK_SOUND
-            }
+        url = f'{BARK_KEY}/{text} {status}/{parse.quote(desp)}'
+        data = {
+            'sound': BARK_SOUND
         }
+        conf = ['Bark App', 'BARK_KEY', BARK_KEY, 'code', 200]
+        name, needs, token, text, code  = conf
 
-        return self.pushTemplate('get', conf['url'], params=conf['data'], name=conf['name'], needs=conf['needs'], token=conf['token'], text=conf['text'], code=conf['code'])
+        return self.pushTemplate('get', url, params=data, name=name, needs=needs, token=token, text=text, code=code)
 
     def tgBot(self, text, status, desp):
         TG_BOT_TOKEN = self.TG_BOT_TOKEN
@@ -180,21 +166,16 @@ class Notify(object):
         if TG_BOT_TOKEN and TG_USER_ID:
             token = 'token'
 
-        conf = {
-            'name': 'Telegram Bot',
-            'needs': 'TG_BOT_TOKEN 和 TG_USER_ID',
-            'token': token,
-            'text': 'ok',
-            'code': 'error_code',
-            'url': f'https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage',
-            'data': {
-                'chat_id': TG_USER_ID,
-                'text': f'{text} {status}\n\n{desp}',
-                'disable_web_page_preview': True
-            }
+        url = f'https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage'
+        data = {
+            'chat_id': TG_USER_ID,
+            'text': f'{text} {status}\n\n{desp}',
+            'disable_web_page_preview': True
         }
+        conf = ['Telegram Bot', 'TG_BOT_TOKEN 和 TG_USER_ID', token, 'ok', 'error_code']
+        name, needs, token, text, code  = conf
 
-        return self.pushTemplate('post', conf['url'], data=conf['data'], name=conf['name'], needs=conf['needs'], token=conf['token'], text=conf['text'], code=conf['code'])
+        return self.pushTemplate('post', url, data=data, name=name, needs=needs, token=token, text=text, code=code)
 
     def ddBot(self, text, status, desp):
         DD_BOT_TOKEN = self.DD_BOT_TOKEN
@@ -222,44 +203,33 @@ class Notify(object):
                 url = 'https://oapi.dingtalk.com/robot/send?access_' \
                     f'token={DD_BOT_TOKEN}&timestamp={timestamp}&sign={sign}'
 
-        conf = {
-            'name': '钉钉机器人',
-            'needs': 'DD_BOT_TOKEN',
-            'token': DD_BOT_TOKEN,
-            'text': 'errcode',
-            'code': 0,
-            'url': url,
-            'data': {
-                'msgtype': 'text',
-                'text': {
-                    'content': f'{text} {status}\n\n{desp}'
-                }
+        data = {
+            'msgtype': 'text',
+            'text': {
+                'content': f'{text} {status}\n\n{desp}'
             }
         }
+        conf = ['钉钉机器人', 'DD_BOT_TOKEN', DD_BOT_TOKEN, 'errcode', 0]
+        name, needs, token, text, code  = conf
 
-        return self.pushTemplate('post', conf['url'], data=conf['data'], name=conf['name'], needs=conf['needs'], token=conf['token'], text=conf['text'], code=conf['code'])
+        return self.pushTemplate('post', url, data=data, name=name, needs=needs, token=token, text=text, code=code)
 
     def wwBot(self, text, status, desp):
         WW_BOT_KEY = self.WW_BOT_KEY
         if 'WW_BOT_KEY' in os.environ:
             WW_BOT_KEY = os.environ['WW_BOT_KEY']
 
-        conf = {
-            'name': '企业微信机器人',
-            'needs': 'WW_BOT_KEY',
-            'token': WW_BOT_KEY,
-            'text': 'errcode',
-            'code': 0,
-            'url': f'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key={WW_BOT_KEY}',
-            'data': {
-                'msgtype': 'text',
-                'text': {
-                    'content': f'{text} {status}\n\n{desp}'
-                }
+        url = f'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key={WW_BOT_KEY}'
+        data = {
+            'msgtype': 'text',
+            'text': {
+                'content': f'{text} {status}\n\n{desp}'
             }
         }
+        conf = ['企业微信机器人', 'WW_BOT_KEY', WW_BOT_KEY, 'errcode', 0]
+        name, needs, token, text, code  = conf
 
-        return self.pushTemplate('post', conf['url'], json=conf['data'], name=conf['name'], needs=conf['needs'], token=conf['token'], text=conf['text'], code=conf['code'])
+        return self.pushTemplate('post', url, json=data, name=name, needs=needs, token=token, text=text, code=code)
 
     def get_wwtoken(self):
         WW_ID = self.WW_ID
@@ -307,44 +277,34 @@ class Notify(object):
         access_token = self.get_wwtoken()
 
         if access_token:
-            conf = {
-                'name': '企业微信应用',
-                'needs': 'WW_APP_USERID 和 WW_APP_AGENTID',
-                'token': token,
-                'text': 'errcode',
-                'code': 0,
-                'url': f'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={access_token}',
-                'data': {
-                    'touser': WW_APP_USERID,
-                    'msgtype': 'text',
-                    'agentid': WW_APP_AGENTID,
-                    'text': {
-                        'content': f'{text} {status}\n\n{desp}'
-                    }
+            url = f'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={access_token}'
+            data = {
+                'touser': WW_APP_USERID,
+                'msgtype': 'text',
+                'agentid': WW_APP_AGENTID,
+                'text': {
+                    'content': f'{text} {status}\n\n{desp}'
                 }
             }
+            conf = ['企业微信应用', 'WW_APP_USERID 和 WW_APP_AGENTID', token, 'errcode', 0]
+            name, needs, token, text, code  = conf
 
-            return self.pushTemplate('post', conf['url'], json=conf['data'], name=conf['name'], needs=conf['needs'], token=conf['token'], text=conf['text'], code=conf['code'])
+            return self.pushTemplate('post', url, json=data, name=name, needs=needs, token=token, text=text, code=code)
 
     def iGot(self, text, status, desp):
         IGOT_KEY = self.IGOT_KEY
         if 'IGOT_KEY' in os.environ:
             IGOT_KEY = os.environ['IGOT_KEY']
 
-        conf = {
-            'name': 'iGot',
-            'needs': 'IGOT_KEY',
-            'token': IGOT_KEY,
-            'text': 'ret',
-            'code': 0,
-            'url': f'https://push.hellyw.com/{IGOT_KEY}',
-            'data': {
-                'title': f'{text} {status}',
-                'content': desp
-            }
+        url = f'https://push.hellyw.com/{IGOT_KEY}'
+        data = {
+            'title': f'{text} {status}',
+            'content': desp
         }
+        conf = ['iGot', 'IGOT_KEY', IGOT_KEY, 'ret', 0]
+        name, needs, token, text, code  = conf
 
-        return self.pushTemplate('post', conf['url'], data=conf['data'], name=conf['name'], needs=conf['needs'], token=conf['token'], text=conf['text'], code=conf['code'])
+        return self.pushTemplate('post', url, data=data, name=name, needs=needs, token=token, text=text, code=code)
 
     def pushPlus(self, text, status, desp):
         PUSH_PLUS_TOKEN = self.PUSH_PLUS_TOKEN
@@ -355,22 +315,17 @@ class Notify(object):
         if 'PUSH_PLUS_USER' in os.environ:
             PUSH_PLUS_USER = os.environ['PUSH_PLUS_USER']
 
-        conf = {
-            'name': 'pushplus',
-            'needs': 'PUSH_PLUS_TOKEN',
+        url = 'https://pushplus.hxtrip.com/send'
+        data = {
             'token': PUSH_PLUS_TOKEN,
-            'text': 'code',
-            'code': 200,
-            'url': 'https://pushplus.hxtrip.com/send',
-            'data': {
-                'token': PUSH_PLUS_TOKEN,
-                'title': f'{text} {status}',
-                'content': desp,
-                'topic': PUSH_PLUS_USER
-            }
+            'title': f'{text} {status}',
+            'content': desp,
+            'topic': PUSH_PLUS_USER
         }
+        conf = ['pushplus', 'PUSH_PLUS_TOKEN', PUSH_PLUS_TOKEN, 'code', 200]
+        name, needs, token, text, code  = conf
 
-        return self.pushTemplate('post', conf['url'], data=conf['data'], name=conf['name'], needs=conf['needs'], token=conf['token'], text=conf['text'], code=conf['code'])
+        return self.pushTemplate('post', url, data=data, name=name, needs=needs, token=token, text=text, code=code)
 
     def send(self, **kwargs):
         app = '原神签到小助手'
@@ -391,6 +346,7 @@ class Notify(object):
         self.wwApp(app, status, msg)
         self.iGot(app, status, msg)
         self.pushPlus(app, status, msg)
+        # self.custPush(app, status, msg)
 
 
 if __name__ == '__main__':
