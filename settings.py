@@ -1,9 +1,10 @@
 # settings
 import logging
-
+import json
+import requests
 import os
 
-__all__ = ['log', 'CONFIG']
+__all__ = ['log', 'CONFIG', 'req']
 
 logging.basicConfig(
     level=logging.INFO,
@@ -35,6 +36,27 @@ class ProductionConfig(_Config):
 class DevelopmentConfig(_Config):
     LOG_LEVEL = logging.DEBUG
 
+
+class HttpRequest(object):
+    @staticmethod
+    def to_python(json_str: str):
+        return json.loads(json_str)
+
+    @staticmethod
+    def to_json(obj):
+        return json.dumps(obj, indent=4, ensure_ascii=False)
+
+    def request(self, method, url,
+            params=None, data=None, json=None, headers=None, **kwargs):
+        try:
+            response = requests.session().request(method, url,
+                params=params, data=data, json=json, headers=headers, **kwargs)
+            return response
+        except Exception as e:
+            log.error(f'请求出错:\n{e}')
+
+
+req = HttpRequest()
 
 RUN_ENV = os.environ.get('RUN_ENV', 'dev')
 if RUN_ENV == 'dev':
