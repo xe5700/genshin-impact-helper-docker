@@ -2,7 +2,7 @@
 @File                : notify.py
 @Github              : https://github.com/y1ndan/genshin-impact-helper
 @Last modified by    : y1ndan
-@Last modified time  : 2021-01-30 19:14:27
+@Last modified time  : 2021-01-30 20:32:20
 '''
 import os
 import time
@@ -74,7 +74,8 @@ class Notify(object):
         text = kwargs.get('text')
         code = kwargs.get('code')
         if not token:
-            log.info(f'{name} 推送所需的 {needs} 未设置, 正在跳过...')
+            log.info(f'{name} 🚫')
+            # log.info(f'{name} 推送所需的 {needs} 未设置, 正在跳过...')
             return
         try:
             response = req.to_python(req.request(
@@ -83,17 +84,18 @@ class Notify(object):
         except Exception as e:
             log.error(e)
         else:
+            # 🚫: disable; 🥳:success; 😳:fail
             if rspcode == code:
-                log.info(f'{name} 推送成功')
+                log.info(f'{name} 🥳')
             # Telegram Bot
             elif name == 'Telegram Bot' and rspcode:
-                log.info(f'{name} 推送成功')
+                log.info(f'{name} 🥳')
             elif name == 'Telegram Bot' and response[code] == 400:
-                log.error(f'{name} 推送失败:\n请主动给 bot 发送一条消息并检查 TG_USER_ID 是否正确')
+                log.error(f'{name} 😳\n请主动给 bot 发送一条消息并检查 TG_USER_ID 是否正确')
             elif name == 'Telegram Bot' and response[code] == 401:
-                log.error(f'{name} 推送失败:\nTG_BOT_TOKEN 错误')
+                log.error(f'{name} 😳\nTG_BOT_TOKEN 错误')
             else:
-                log.error(f'{name} 推送失败:\n{response}')
+                log.error(f'{name} 😳\n{response}')
 
     def serverChan(self, text, status, desp):
         SCKEY = self.SCKEY
@@ -260,7 +262,8 @@ class Notify(object):
                 else:
                     log.error(f'access_token 获取失败:\n{response}')
         else:
-            log.info('企业微信应用 推送所需的 WW_ID 和 WW_APP_SECRET 未设置, 正在跳过...')
+            log.info('企业微信应用 🚫')
+            # log.info('企业微信应用 推送所需的 WW_ID 和 WW_APP_SECRET 未设置, 正在跳过...')
 
     def wwApp(self, text, status, desp):
         WW_APP_USERID = self.WW_APP_USERID
