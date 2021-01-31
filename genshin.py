@@ -176,24 +176,25 @@ class Sign(Base):
 
             log.info(f'准备为旅行者 {i + 1} 号签到...')
             time.sleep(10)
-            messgae = {
+            message = {
                 'today': today,
                 'region_name': self._region_name_list[i],
                 'uid': uid,
-                'award_name': awards[total_sign_day]['name'],
-                'award_cnt': awards[total_sign_day]['cnt'],
                 'total_sign_day': total_sign_day,
                 'end': '',
             }
             if info_list[i]['data']['is_sign'] is True:
-                messgae['award_name'] = awards[total_sign_day - 1]['name']
-                messgae['award_cnt'] = awards[total_sign_day - 1]['cnt']
-                messgae['status'] = f'👀 旅行者 {i + 1} 号, 你已经签到过了哦'
-                message_list.append(self.message.format(**messgae))
+                message['award_name'] = awards[total_sign_day - 1]['name']
+                message['award_cnt'] = awards[total_sign_day - 1]['cnt']
+                message['status'] = f'👀 旅行者 {i + 1} 号, 你已经签到过了哦'
+                message_list.append(self.message.format(**message))
                 continue
+            else:
+                message['award_name'] = awards[total_sign_day]['name']
+                message['award_cnt'] = awards[total_sign_day]['cnt']
             if info_list[i]['data']['first_bind'] is True:
-                messgae['status'] = f'💪 旅行者 {i + 1} 号, 请先前往米游社App手动签到一次'
-                message_list.append(self.message.format(**messgae))
+                message['status'] = f'💪 旅行者 {i + 1} 号, 请先前往米游社App手动签到一次'
+                message_list.append(self.message.format(**message))
                 continue
 
             data = {
@@ -216,9 +217,9 @@ class Sign(Base):
             if code != 0:
                 message_list.append(response)
                 continue
-            messgae['total_sign_day'] = total_sign_day + 1
-            messgae['status'] = response['message']
-            message_list.append(self.message.format(**messgae))
+            message['total_sign_day'] = total_sign_day + 1
+            message['status'] = response['message']
+            message_list.append(self.message.format(**message))
         log.info('签到完毕')
 
         return ''.join(message_list)
