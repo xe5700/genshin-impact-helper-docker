@@ -199,7 +199,7 @@ if (ask == true) {
 
 ### Push All In One
 
-支持Server酱、酷推、Bark App、Telegram Bot、钉钉机器人、企业微信机器人、iGot聚合推送和pushplus 单个或多个推送，配置对应参数就会开启对应的推送方式，参数列表详见下文`参数`部分。
+支持Server酱、酷推、Bark App、Telegram Bot、钉钉机器人、企业微信机器人、企业微信应用、iGot聚合推送、pushplus和自定义推送 单个或多个推送，配置对应参数就会开启对应的推送方式，参数列表详见下文`参数`部分。
 
 #### Server酱
 
@@ -215,6 +215,38 @@ if (ask == true) {
 
 - 建立名为`SCKEY`的 secret，并添加获取的 SCKEY 值，即可开启Server酱推送
 
+#### 自定义推送
+
+建立名为`PUSH_CONFIG`的 secret，并按你使用的自定义推送的文档将下列json模板填写完整
+
+```json
+{
+    "method": "post",
+    "url": "",
+    "data": {},
+    "text": "",
+    "code": 200,
+    "data_type": "data",
+    "show_title_and_desp": false,
+    "set_data_title": "",
+    "set_data_sub_title": "",
+    "set_data_desp": ""
+}
+```
+```
+说明:
+    method: 必填,请求方式.默认: post.
+    url: 必填,完整的自定义推送链接.
+    data: 选填,发送的data.默认为空,可自行添加额外参数.
+    text: 必填,响应体返回的状态码的key.例如: server酱的为errno.
+    code: 必填,响应体返回的状态码的value.例如: server酱的为0.
+    data_type: 选填,发送data的方式,可选params|json|data,默认: data.
+    show_title_and_desp: 选填,是否将标题(应用名+运行状态)和运行结果合并.默认: false.
+    set_data_title: 必填,填写推送方式data中消息标题的key.例如: server酱的为text.
+    set_data_sub_title: 选填,填写推送方式data中消息正文的key.有的推送方式正文的key有次级结构,需配合set_data_title构造子级,与set_data_desp互斥.例如: 企业微信中,set_data_title填text,set_data_sub_title填content.
+    set_data_desp: 选填,填写推送方式data中消息正文的key.例如: server酱的为desp.与set_data_sub_title互斥,两者都填则本项不生效.
+```
+
 其他推送方式请参考对应官方文档获取 KEY 或 TOKEN 等参数，再添加到`Secrets`里。
 
 ## 🧬参数
@@ -224,24 +256,25 @@ if (ask == true) {
 |   参数名称         |   是否必填   |   默认值           |   说明                                                          |
 |---                |---          |---                 |---                                                              |
 |   COOKIE          | ✅         |                    |   米游社的Cookie                                                 |
-|   SCKEY           | ❌         |                    |   Server酱推送所需的SCKEY                                         |
-|   COOL_PUSH_SKEY  | ❌         |                    |   Cool Push推送所需的SKEY                                         |
-|   COOL_PUSH_MODE  | ❌         | send               |   Cool Push推送方式,可选群组(group)或者微信(wx)                     |
-|   BARK_KEY        | ❌         |                    |   Bark推送所需的BARK_KEY                                          |
-|   BARK_SOUND      | ❌         | healthnotification |   Bark推送的铃声,在APP内查看铃声列表                                |
-|   TG_BOT_TOKEN    | ❌         |                    |   Telegram Bot的TOKEN                                             |
-|   TG_USER_ID      | ❌         |                    |   接收通知消息的Telegram用户的ID                                   |
-|   DD_BOT_TOKEN    | ❌         |                    |   钉钉机器人的webhook KEY                                          |
-|   DD_BOT_SECRET   | ❌         |                    |   钉钉加签密钥,机器人安全设置页面,加签一栏下面显示的SEC开头的字符串    |
-|   WW_BOT_KEY      | ❌         |                    |   企业微信机器人的webhook KEY                                      |
-|   IGOT_KEY        | ❌         |                    |   iGot推送所需的KEY                                                |
-|   PUSH_PLUS_TOKEN | ❌         |                    |   pushplus一对一推送或一对多推送下面的Token                         |
-|   PUSH_PLUS_USER  | ❌         | 一对一推送           |   pushplus一对多推送的'群组编码'                                   |
-|   WW_ID           | ❌         |                    |   企业ID                                                          |
-|   WW_APP_SECRET   | ❌         |                    |   应用Secret                                                      |
-|   WW_APP_USERID   | ❌         |                    |   推送对象ID，不懂则填写@all                                        |
-|   WW_APP_AGENTID  | ❌         |                    |   应用AgentId                                                     |
-|   CRON_SIGNIN     | ❌         | 30 9 * * *         |   DOCKER脚本的自动签到计划任务                                   |
+|   SCKEY           | ❌         |                    |   Server酱的SCKEY                                                |
+|   COOL_PUSH_SKEY  | ❌         |                    |   Cool Push的SKEY                                                |
+|   COOL_PUSH_MODE  | ❌         | send               |   Cool Push的推送方式.可选私聊(send)、群组(group)或者微信(wx).      |
+|   BARK_KEY        | ❌         |                    |   Bark的IP或设备码                                                |
+|   BARK_SOUND      | ❌         | healthnotification |   Bark的推送铃声.在APP内查看铃声列表                                |
+|   TG_BOT_TOKEN    | ❌         |                    |   Telegram Bot的token.向bot father申请bot时生成                    |
+|   TG_USER_ID      | ❌         |                    |   Telegram推送对象的用户ID                                         |
+|   DD_BOT_TOKEN    | ❌         |                    |   钉钉机器人WebHook地址中access_token后的字段                       |
+|   DD_BOT_SECRET   | ❌         |                    |   钉钉加签密钥.在机器人安全设置页面,加签一栏下面显示的以SEC开头的字符串 |
+|   WW_BOT_KEY      | ❌         |                    |   企业微信机器人WebHook地址中key后的字段                             |
+|   WW_ID           | ❌         |                    |   企业微信的企业ID(corpid).在'管理后台'->'我的企业'->'企业信息'里查看  |
+|   WW_APP_SECRET   | ❌         |                    |   企业微信应用的secret.在'管理后台'->'应用与小程序'->'应用'->'自建',点进某应用里查看|
+|   WW_APP_USERID   | ❌         | @all               |   企业微信应用推送对象的用户ID.在'管理后台'->'通讯录',点进某用户的详情页里查看   |
+|   WW_APP_AGENTID  | ❌         |                    |   企业微信应用的agentid.在'管理后台'->'应用与小程序'->'应用',点进某应用里查看   |
+|   IGOT_KEY        | ❌         |                    |   iGot的KEY                                                         |
+|   PUSH_PLUS_TOKEN | ❌         |                    |   pushplus一对一推送或一对多推送的token                               |
+|   PUSH_PLUS_USER  | ❌         | 一对一推送          |   pushplus一对多推送的群组编码                                        |
+|   PUSH_CONFIG     | ❌         |                    |   JSON格式的自定义推送配置.详见 订阅-自定义推送 部分说明                |
+|   CRON_SIGNIN     | ❌         | 30 9 * * *         |   DOCKER脚本的自动签到计划任务                                        |
 
 ## 🔨开发
 
