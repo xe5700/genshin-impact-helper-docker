@@ -16,6 +16,9 @@ from settings import log, CONFIG, req
 from notify import Notify
 
 
+def version():
+    return 'v1.6.11'
+
 def hexdigest(text):
     md5 = hashlib.md5()
     md5.update(text.encode())
@@ -195,6 +198,8 @@ class Sign(Base):
 
 
 if __name__ == '__main__':
+    log.info(f'🌀原神签到小助手 {version()}')   
+    log.info('若签到失败, 请尝试更新!')
     log.info('任务开始')
     notify = Notify()
     msg_list = []
