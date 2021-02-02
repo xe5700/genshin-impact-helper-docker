@@ -2,7 +2,7 @@
 @File                : genshin.py
 @Github              : https://github.com/y1ndan/genshin-impact-helper
 @Last modified by    : y1ndan
-@Last modified time  : 2021-01-13 11:10:30
+@Last modified time  : 2021-02-02 14:10:30
 '''
 import hashlib
 import json
@@ -12,10 +12,7 @@ import time
 import uuid
 import os
 
-import requests
-from requests.exceptions import HTTPError
-
-from settings import log, CONFIG
+from settings import log, CONFIG, req
 from notify import Notify
 
 
@@ -41,60 +38,30 @@ class Base(object):
         }
         return header
 
-    @staticmethod
-    def to_python(json_str: str):
-        return json.loads(json_str)
-
-    @staticmethod
-    def to_json(obj):
-        return json.dumps(obj, indent=4, ensure_ascii=False)
-
 
 class Roles(Base):
     def get_awards(self):
-        response = dict()
+        response = {}
         try:
-            content = requests.Session().get(
-                CONFIG.AWARD_URL, headers=self.get_header()).text
-            response = self.to_python(content)
+            response = req.to_python(req.request(
+                'get', CONFIG.AWARD_URL, headers=self.get_header()).text)
         except json.JSONDecodeError as e:
-            log.error(e)
+            raise Exception(e)
 
         return response
 
-    def get_roles(self, max_attempt_number: int = 4):
+    def get_roles(self):
         log.info('准备获取账号信息...')
-        error = None
-        response = dict()
-
-        for i in range(1, max_attempt_number):
-            try:
-                content = requests.Session().get(
-                    CONFIG.ROLE_URL, headers=self.get_header()).text
-                response = self.to_python(content)
-            except HTTPError as error:
-                log.error(
-                    'HTTP error when get game roles, retry %s time(s)...' % i)
-                log.error('error is %s' % error)
-                continue
-            except KeyError as error:
-                log.error(
-                    'Wrong response to get game roles, retry %s time(s)...'% i)
-                log.error('response is %s' % error)
-                continue
-            except Exception as error:
-                log.error('Unknown error %s, die' % error)
-                raise Exception(error)
-            error = None
-            break
-
-        if error:
-            log.error(
-                'Maximum retry times have been reached, error is %s ' % error)
-            raise Exception(error)
+        response = {}
+        try:
+            response = req.to_python(req.request(
+                'get', CONFIG.ROLE_URL, headers=self.get_header()).text)
+            message = response['message']
+        except Exception as e:
+            raise Exception(e)
         if response.get(
             'retcode', 1) != 0 or response.get('data', None) is None:
-            raise Exception(response['message'])
+            raise Exception(message)
 
         log.info('账号信息获取完毕')
         return response
@@ -153,9 +120,9 @@ class Sign(Base):
             info_url = CONFIG.INFO_URL.format(
                 self._region_list[i], CONFIG.ACT_ID, self._uid_list[i])
             try:
-                content = requests.Session().get(
-                    info_url, headers=self.get_header()).text
-                info_list.append(self.to_python(content))
+                content = req.request(
+                    'get', info_url, headers=self.get_header()).text
+                info_list.append(req.to_python(content))
             except Exception as e:
                 raise Exception(e)
 
@@ -204,11 +171,9 @@ class Sign(Base):
             }
 
             try:
-                content = requests.Session().post(
-                    CONFIG.SIGN_URL,
-                    headers=self.get_header(),
-                    data=json.dumps(data, ensure_ascii=False)).text
-                response = self.to_python(content)
+                response = req.to_python(req.request(
+                    'post', CONFIG.SIGN_URL, headers=self.get_header(),
+                    data=json.dumps(data, ensure_ascii=False)).text)
             except Exception as e:
                 raise Exception(e)
             code = response.get('retcode', 99999)
@@ -234,10 +199,11 @@ if __name__ == '__main__':
     notify = Notify()
     msg_list = []
     ret = success_num = fail_num = 0
-    # ============= miHoYo BBS COOKIE ============
-    # 此处填米游社的COOKIE
-    # 注: Github Actions用户请到Settings->Secrets里设置,Name=COOKIE,Value=<获取的值>
-    # 多个账号的COOKIE值之间用 # 号隔开,例如: 1#2#3#4
+    """miHoYo BBS COOKIE
+    :param COOKIE: 米游社的COOKIE.多个账号的COOKIE值之间用 # 号隔开,例如: 1#2#3#4
+    """
+    # Github Actions用户请到Repo的Settings->Secrets里设置变量,变量名字必须与上述参数变量名字完全一致,否则无效!!!
+    # Name=<变量名字>,Value=<获取的值>
     COOKIE = ''
 
     if os.environ.get('COOKIE', '') != '':

@@ -2,7 +2,7 @@
 @File                : notify.py
 @Github              : https://github.com/y1ndan/genshin-impact-helper
 @Last modified by    : y1ndan
-@Last modified time  : 2021-02-01 01:12:19
+@Last modified time  : 2021-02-02 18:39:15
 '''
 import os
 import time
@@ -98,12 +98,12 @@ class Notify(object):
             return
         try:
             response = req.to_python(req.request(
-                method, url, params, data, json, headers).text)
+                method, url, 2, params, data, json, headers).text)
             rspcode = response[text]
         except Exception as e:
-            log.error(e)
+            # 🚫: disabled; 🥳:success; 😳:fail
+            log.error(f'{name} 😳\n{e}')
         else:
-            # 🚫: disable; 🥳:success; 😳:fail
             if rspcode == code:
                 log.info(f'{name} 🥳')
             # Telegram Bot
