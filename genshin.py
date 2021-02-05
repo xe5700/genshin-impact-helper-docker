@@ -194,7 +194,7 @@ class Sign(Base):
 
     @property
     def message(self):
-        return CONFIG.MESSGAE_TEMPLATE
+        return CONFIG.MESSAGE_TEMPLATE
 
 
 if __name__ == '__main__':

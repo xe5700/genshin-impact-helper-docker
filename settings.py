@@ -81,7 +81,7 @@ else:
 log.basicConfig(level=CONFIG.LOG_LEVEL)
 
 
-MESSGAE_TEMPLATE = '''
+MESSAGE_TEMPLATE = '''
     {today:#^28}
     🔅[{region_name}]{uid}
     今日奖励: {award_name} × {award_cnt}
@@ -89,5 +89,5 @@ MESSGAE_TEMPLATE = '''
     签到结果: {status}
     {end:#^28}'''
 
-CONFIG.MESSGAE_TEMPLATE = MESSGAE_TEMPLATE
+CONFIG.MESSAGE_TEMPLATE = MESSAGE_TEMPLATE
 
