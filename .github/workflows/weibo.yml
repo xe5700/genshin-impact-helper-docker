@@ -1,0 +1,59 @@
+name: "Weibo Helper"
+
+on:
+  schedule:
+    - cron: "10 16 * * *"  # scheduled at 00:10 (UTC+8) everyday
+  workflow_dispatch:
+
+env:
+  RUN_ENV: 'prod'
+  TZ: 'Asia/Shanghai'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # if: github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          # ref: master
+
+      - name: Set up python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Random sleep
+        if: github.event_name == 'schedule'
+        run: sleep $(shuf -i 10-300 -n 1)
+
+      - name: Run weibo sign
+        env:
+          WB_COOKIE: ${{ secrets.WB_COOKIE }}
+          KA_COOKIE: ${{ secrets.KA_COOKIE }}
+          SCKEY: ${{ secrets.SCKEY }}
+          COOL_PUSH_SKEY: ${{ secrets.COOL_PUSH_SKEY }}
+          COOL_PUSH_MODE: ${{ secrets.COOL_PUSH_MODE }}
+          BARK_KEY: ${{ secrets.BARK_KEY }}
+          BARK_SOUND: ${{ secrets.BARK_SOUND }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_USER_ID: ${{ secrets.TG_USER_ID }}
+          DD_BOT_TOKEN: ${{ secrets.DD_BOT_TOKEN }}
+          DD_BOT_SECRET: ${{ secrets.DD_BOT_SECRET }}
+          WW_BOT_KEY: ${{ secrets.WW_BOT_KEY }}
+          WW_ID: ${{ secrets.WW_ID }}
+          WW_APP_SECRET: ${{ secrets.WW_APP_SECRET }}
+          WW_APP_USERID: ${{ secrets.WW_APP_USERID }}
+          WW_APP_AGENTID: ${{ secrets.WW_APP_AGENTID }}
+          IGOT_KEY: ${{ secrets.IGOT_KEY }}
+          PUSH_PLUS_TOKEN: ${{ secrets.PUSH_PLUS_TOKEN }}
+          PUSH_PLUS_USER: ${{ secrets.PUSH_PLUS_USER }}
+          PUSH_CONFIG: ${{ secrets.PUSH_CONFIG }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python3 ./weibo.py
+

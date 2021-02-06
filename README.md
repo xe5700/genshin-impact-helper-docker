@@ -36,6 +36,8 @@ Genshin Impact Helper 可以自动化为你获取原神每日福利。
 - [x] **支持订阅**  可选多种订阅方式，通过配置不同参数开启，每天将签到结果推送给订阅用户
 - [x] **支持多账号**  不同账号的`Cookie`值之间用`#`分隔，如：`Cookie1#Cookie2#Cookie3`
 - [x] **支持多角色**  支持绑定官服和B站渠道服角色的米游社账号
+- [x] **微博超话签到**  推荐本地运行，异地IP可能会失败
+- [x] **原神超话领码**  自动领取兑换码并推送给订阅用户
 
 ## 📐部署
 
@@ -256,6 +258,8 @@ if (ask == true) {
 |   参数名称         |   是否必填   |   默认值           |   说明                                                          |
 |---                |---          |---                 |---                                                              |
 |   COOKIE          | ✅         |                    |   米游社的Cookie                                                 |
+|   WB_COOKIE       | ❌         |                    |   新浪微博的Cookie                                                 |
+|   KA_COOKIE       | ❌         |                    |   新浪新手卡中心的Cookie                                                 |
 |   SCKEY           | ❌         |                    |   Server酱的SCKEY                                                |
 |   COOL_PUSH_SKEY  | ❌         |                    |   Cool Push的SKEY                                                |
 |   COOL_PUSH_MODE  | ❌         | send               |   Cool Push的推送方式.可选私聊(send)、群组(group)或者微信(wx).      |
