@@ -33,13 +33,14 @@ class Weibo():
                 headers=self.get_header(), allow_redirects=False)
         except Exception as e:
             log.error(e)
-        if response.status_code == 200:
-            log.info('🥳 微博: 超话列表获取成功')
-            return req.to_python(response.text)
-        elif response.status_code == 302:
-            log.error('😳 微博: 登录可能失效, 尝试重新登录')
         else:
-            log.error('😳 微博: 超话列表获取失败')
+            if response.status_code == 200:
+                log.info('🥳 weibo: 超话列表获取成功')
+                return req.to_python(response.text)
+            elif response.status_code == 302:
+                log.error('😳 weibo: 登录可能失效, 尝试重新登录')
+            else:
+                log.error('😳 weibo: 超话列表获取失败')
 
         log.info('超话列表获取完毕')
         return
@@ -47,6 +48,7 @@ class Weibo():
     def resolve_data(self):
         super_list = self.get_super_list()
         if not super_list:
+            log.info('取消解析数据信息')
             return
         log.info('准备解析数据信息...')
         follow_list = []
@@ -78,7 +80,7 @@ class Weibo():
     def super_sign(self):
         follow_list = self.resolve_data()
         if not follow_list:
-            log.info('微博超话签到取消')
+            log.info('取消微博超话签到')
             return
         for follow in follow_list:
             lv = f'[Lv.{follow["lv"]}]'
@@ -95,10 +97,11 @@ class Weibo():
                         'post', url, headers=self.get_header()).text)
                 except Exception as e:
                     log.error(e)
-                if response['ok'] == 1:
-                    log.info(f'🥳 {lv}{name}: 签到成功')
                 else:
-                    log.info(f'😳 {lv}{name}: 签到失败\n{response}')
+                    if response['ok'] == 1:
+                        log.info(f'🥳 {lv}{name}: 签到成功')
+                    else:
+                        log.info(f'😳 {lv}{name}: 签到失败\n{response}')
 
         log.info('微博超话签到完毕')
         return
@@ -117,12 +120,15 @@ class RedeemCode(object):
                 'get', CONFIG.YS_URL, headers=self.header).text)
             group = response['data']['cards'][3]['card_group'][0]['group']
         except Exception as e:
-            log.error(e)
-        for ids in group:
-            if '礼包' in ids['title_sub']:
-                id = re.findall('(?<=gift\/)(.*)\?channel', ids['scheme'])[0]
-                log.info(f'└─🎁 {id}')
-                id_list.append(id)
+            log.error(f'活动信息获取失败:\n{e}')
+        else:
+            for ids in group:
+                if '礼包' in ids.get('title_sub', ''):
+                    id = re.findall('(?<=gift\/)(.*)\?channel', ids['scheme'])[0]
+                    log.info(f'└─🎁 {id}')
+                    id_list.append(id)
+            if not id_list:
+                log.info('原神超话暂无活动')
 
         log.info('活动信息获取完毕')
         return id_list
@@ -143,34 +149,36 @@ class RedeemCode(object):
         for i in range(retry):
             sleep(sec)
             log.info(f'♻️ 第 {i + 1} 次领取 {id} 的兑换码...')
-            response = {}
             try:
                 response = req.to_python(req.request(
                     'get', CONFIG.KA_URL, params=data, headers=self.header).text)
-                k = response['k']
             except Exception as e:
                 log.error(e)
-            if k:
-                log.info(f'{item} 的兑换码领取成功')
-                return response['data']['kahao']
-            elif response['code'] == '2002' and '头像' in response['msg']:
-                log.error(f'🥳 {id}: 每天只能领取一张或该兑换码已经领取过了哦')
-                break
-            elif response['code'] == '2002' and '签到' in response['msg']:
-                log.error(f'😳 {id}: {response["msg"]}')
-                break
-            elif response['code'] == '2002':
-                log.error(f'😳 {id}: {response["msg"]}')
-            elif 'login' in response['msg']:
-                log.error('登录失效, 请重新登录')
-                return
             else:
-                log.error(f'😳 {id}: {response}')
+                if response.get('k'):
+                    log.info(f'{item} 的兑换码领取成功')
+                    return response['data']['kahao']
+                elif response.get('code') == '2002' and '头像' in response.get('msg', ''):
+                    log.error(f'🥳 {id}: 每天只能领取一张或该兑换码已经领取过了哦')
+                    break
+                elif response.get('code') == '2002' and '签到' or '尚未' in response.get('msg', ''):
+                    log.error(f'😳 {id}: {response["msg"]}')
+                    break
+                elif response.get('code') == '2002':
+                    log.error(f'😳 {id}: {response["msg"]}')
+                elif 'login' in response.get('msg', ''):
+                    log.error('登录失效, 请重新登录')
+                    return
+                else:
+                    log.error(f'😳 {id}: {response}')
 
-            if i + 1 != retry:
-                log.info(f'将在 {sec} 秒后重试...')
-            else:
-                log.error(f'🚫 {id}: 失败次数达到上限, 放弃领取该兑换码')
+                if i + 1 != retry:
+                    log.info(f'将在 {sec} 秒后重试...')
+                else:
+                    log.error(f'🚫 {id}: 失败次数达到上限, 放弃领取该兑换码')
+
+        log.info('兑换码获取完毕')
+        return
 
     def get_box_code(self):
         log.info('准备获取「个人中心」的兑换码...')
@@ -183,25 +191,27 @@ class RedeemCode(object):
                 CONFIG.BOX_URL, headers=self.header, allow_redirects=False)
         except Exception as e:
             log.error(e)
-        if response.status_code == 200:
-            response.encoding = 'utf-8'
-            soup = BeautifulSoup(response.text, 'html.parser')
-            # print(soup.prettify())
-            boxs = soup.find_all(class_ = 'giftbag')
-            for box in boxs:
-                item = {
-                    'id': box.find(class_ = 'deleBtn').get('data-itemid'),
-                    'title': box.find(class_ = 'title itemTitle').text,
-                    'code': box.find('span').parent.contents[1]
-                }
-                # log.info(f'└─💌 {item["id"]}')
-                id_list.append(box.find(class_ = 'deleBtn').get('data-itemid'))
-                code_list.append(item)
-        elif response.status_code == 302:
-            log.error('😳 ka.sina: 登录可能失效, 尝试重新登录')
         else:
-            log.error('😳 ka.sina: 兑换码获取失败')
-        code_list.insert(0, id_list)
+            if response.status_code == 200:
+                response.encoding = 'utf-8'
+                soup = BeautifulSoup(response.text, 'html.parser')
+                # print(soup.prettify())
+                boxs = soup.find_all(class_ = 'giftbag')
+                for box in boxs:
+                    item = {
+                        'id': box.find(class_ = 'deleBtn').get('data-itemid'),
+                        'title': box.find(class_ = 'title itemTitle').text,
+                        'code': box.find('span').parent.contents[1]
+                    }
+                    # log.info(f'└─💌 {item["id"]}')
+                    id_list.append(box.find(class_ = 'deleBtn').get('data-itemid'))
+                    code_list.append(item)
+                code_list.insert(0, id_list)
+            elif response.status_code == 302:
+                log.error('😳 ka.sina: 登录可能失效, 尝试重新登录')
+            else:
+                log.error('😳 ka.sina: 兑换码获取失败')
+
         # 打印兑换码
         # print(req.to_json(code_list))
 
@@ -218,7 +228,6 @@ if __name__ == '__main__':
     # Github Actions用户请到Repo的Settings->Secrets里设置变量,变量名字必须与上述参数变量名字完全一致,否则无效!!!
     # Name=<变量名字>,Value=<获取的值>
     WB_COOKIE = ''
-
     KA_COOKIE = ''
 
     if os.environ.get('WB_COOKIE', '') != '':
@@ -231,18 +240,17 @@ if __name__ == '__main__':
     if KA_COOKIE:
         events = RedeemCode(KA_COOKIE).get_id()
         codes = RedeemCode(KA_COOKIE).get_box_code()
-        if not events:
-            log.info('原神超话暂无活动或活动信息获取失败')
-        else:
-            ids = events
-            if codes:
-                ids = [i for i in events if i not in codes[0]]
-            log.info(f'检测到有 {len(ids)} 个未领取的兑换码')
+        if events and codes:
+            ids = [i for i in events if i not in codes[0]]
             if not ids:
-                log.info('暂无可领取的兑换码')
+                log.info('兑换码已全部领取')
             else:
+                log.info(f'检测到有 {len(ids)} 个未领取的兑换码')
                 for id in ids:
                     code = RedeemCode(KA_COOKIE).get_code(id)
                     if code:
                         Notify().send(status='原神兑换码', msg=code, hide=True)
+
+        else:
+            log.info('数据获取异常, 取消领取礼包')
 
