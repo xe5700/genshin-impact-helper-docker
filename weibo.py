@@ -125,7 +125,7 @@ class RedeemCode(object):
             for ids in group:
                 if '礼包' in ids.get('title_sub', ''):
                     id = re.findall('(?<=gift\/)(.*)\?channel', ids['scheme'])[0]
-                    log.info(f'└─🎁 {id}')
+                    log.info(f'└─🎁 {ids["title_sub"]}')
                     id_list.append(id)
             if not id_list:
                 log.info('原神超话暂无活动')
@@ -203,8 +203,8 @@ class RedeemCode(object):
                         'title': box.find(class_ = 'title itemTitle').text,
                         'code': box.find('span').parent.contents[1]
                     }
-                    # log.info(f'└─💌 {item["id"]}')
-                    id_list.append(box.find(class_ = 'deleBtn').get('data-itemid'))
+                    log.info(f'└─☁️{item["title"]}')
+                    id_list.append(item['id'])
                     code_list.append(item)
                 code_list.insert(0, id_list)
             elif response.status_code == 302:
@@ -239,7 +239,7 @@ if __name__ == '__main__':
         Weibo(WB_COOKIE).super_sign()
     if KA_COOKIE:
         events = RedeemCode(KA_COOKIE).get_id()
-        codes = RedeemCode(KA_COOKIE).get_box_code()
+        codes = RedeemCode(KA_COOKIE).get_box_code() if events else ''
         if events and codes:
             ids = [i for i in events if i not in codes[0]]
             if not ids:
@@ -248,9 +248,10 @@ if __name__ == '__main__':
                 log.info(f'检测到有 {len(ids)} 个未领取的兑换码')
                 for id in ids:
                     code = RedeemCode(KA_COOKIE).get_code(id)
-                    if code:
-                        Notify().send(status='原神兑换码', msg=code, hide=True)
+                    status = '原神兑换码' if code else '原神微博活动提醒'
+                    msg = code if code else f'🎁 您有未领取的礼包'
+                    Notify().send(status=status, msg=msg, hide=True)
 
         else:
-            log.info('数据获取异常, 取消领取礼包')
+            log.info('取消领取签到礼包')
 

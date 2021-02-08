@@ -19,7 +19,7 @@ log = logger = logging
 
 class _Config:
     GIH_VERSION = ''
-    WBH_VERSION = '1.0.1'
+    WBH_VERSION = '1.0.2'
     ACT_ID = 'e202009291139501'
     APP_VERSION = '2.3.0'
     REFERER_URL = 'https://webstatic.mihoyo.com/bbs/event/signin-ys/index.html?' \
