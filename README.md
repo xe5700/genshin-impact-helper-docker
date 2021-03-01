@@ -13,6 +13,8 @@ Genshin Impact Helper
 
 </div>
 
+## 已支持国际版签到 HoYoLAB Community daily check-in is supported 
+
 ## 💭前言
 
 > 吹水交流：[130516740](https://qm.qq.com/cgi-bin/qm/qr?k=_M9lYFxkYD7yQQR2btyG3pkZWFys_I-l&authKey=evGDzE2eFVBm46jsHpgcWrokveg70Z9GKl3H45o0oJuia620UGeO27lDPG9gKb/2&noverify=0)
@@ -258,6 +260,7 @@ if (ask == true) {
 |   参数名称         |   是否必填   |   默认值           |   说明                                                          |
 |---                |---          |---                 |---                                                              |
 |   COOKIE          | ✅         |                    |   米游社的Cookie                                                 |
+|   OS_COOKIE          | ❌         |                    |   米游社国际版的Cookie                                                 |
 |   WB_COOKIE       | ❌         |                    |   新浪微博的Cookie                                                 |
 |   KA_COOKIE       | ❌         |                    |   新浪新手卡中心的Cookie                                                 |
 |   SCKEY           | ❌         |                    |   Server酱的SCKEY                                                |

@@ -18,7 +18,7 @@ log = logger = logging
 
 
 class _Config:
-    GIH_VERSION = ''
+    GIH_VERSION = '1.7.0.210301-alpha'
     WBH_VERSION = '1.0.2'
     ACT_ID = 'e202009291139501'
     APP_VERSION = '2.3.0'
@@ -31,6 +31,14 @@ class _Config:
     SIGN_URL = 'https://api-takumi.mihoyo.com/event/bbs_sign_reward/sign'
     USER_AGENT = 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) ' \
                  'miHoYoBBS/{}'.format(APP_VERSION)
+    # HoYoLAB
+    LANG = 'en-us'
+    OS_ACT_ID = 'e202102251931481'
+    OS_REFERER_URL = 'https://webstatic-sea.mihoyo.com/ys/event/signin-sea/index.html?act_id={}'.format(OS_ACT_ID)
+    OS_REWARD_URL = 'https://hk4e-api-os.mihoyo.com/event/sol/home?lang={}&act_id={}'.format(LANG, OS_ACT_ID)
+    OS_ROLE_URL = 'https://api-os-takumi.mihoyo.com/auth/api/getUserAccountInfoByLToken?t={}&ltoken={}&uid={}'
+    OS_INFO_URL = 'https://hk4e-api-os.mihoyo.com/event/sol/info?lang={}&act_id={}'.format(LANG, OS_ACT_ID)
+    OS_SIGN_URL = 'https://hk4e-api-os.mihoyo.com/event/sol/sign?lang={}'.format(LANG)
     # weibo
     CONTAINER_ID = '100808fc439dedbb06ca5fd858848e521b8716'
     SUPER_URL = 'https://m.weibo.cn/api/container/getIndex?containerid={}'.format('100803_-_page_my_follow_super')
