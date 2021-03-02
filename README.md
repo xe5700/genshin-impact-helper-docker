@@ -1,7 +1,6 @@
+简体中文 | [English](./README.en-US.md)
 <div align="center"> 
-<h1 align="center">
-Genshin Impact Helper
-</h1>
+<h1 align="center">Genshin Impact Helper</h1>
 
 ![Genshin Impact Helper](https://i.loli.net/2020/11/18/3zogEraBFtOm5nI.jpg)
 [![GitHub stars](https://img.shields.io/github/stars/y1ndan/genshin-impact-helper?style=flat-square)](https://github.com/y1ndan/genshin-impact-helper/stargazers)
