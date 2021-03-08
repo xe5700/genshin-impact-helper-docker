@@ -7,7 +7,7 @@
 [![GitHub forks](https://img.shields.io/github/forks/y1ndan/genshin-impact-helper?style=flat-square)](https://github.com/y1ndan/genshin-impact-helper/network)
 [![GitHub issues](https://img.shields.io/github/issues/y1ndan/genshin-impact-helper?style=flat-square)](https://github.com/y1ndan/genshin-impact-helper/issues)
 [![GitHub contributors](https://img.shields.io/github/contributors/y1ndan/genshin-impact-helper?style=flat-square)](https://github.com/y1ndan/genshin-impact-helper/graphs/contributors)
-[![Telegram](https://img.shields.io/badge/chat-130516740-0d86d7?style=flat-square)](https://t.me/genshinihelper)
+[![Telegram](https://img.shields.io/badge/chat-t.me/genshinhelper-0d86d7?style=flat-square)](https://t.me/genshinhelper)
 ![Github workflow status](https://img.shields.io/github/workflow/status/y1ndan/genshin-impact-helper/Genshin%20Impact%20Helper?label=status&style=flat-square)
 
 </div>
