@@ -20,10 +20,17 @@
 
 ![new-secret.png](https://i.loli.net/2020/10/28/sxTuBFtRvzSgUaA.png)
 
-- Add a new secret named `OS_COOKIE` and the value is what you obtained in the previous step.
+- Add a new secret named `OS_COOKIE` and the value is what you obtained in the previous step. Warning: THE NAME MUST BE `OS_COOKIE`
+- Account_id, Cookie_token, Ltoken are required fields in the secret
 
-![add-secret](https://i.loli.net/2020/10/28/sETkVdmrNcCUpgq.png)
+![add-secret](https://i.imgur.com/187niY1.png)
+![add-secret](https://i.imgur.com/5rZwtK6.png)
 
 - Select `Genshin Impact Helper Global` on the Actions page.
 - Click the `Run workflow` button.
 - When the build is complete, click the `Genshin Impact Helper Global`-->`build`-->`Run sign` to view logs. 
+
+## Multiple accounts
+- Multiple account cookies need to be separated by "#" symbol
+
+![multiple-accounts](https://i.imgur.com/MFXsKbC.png)
